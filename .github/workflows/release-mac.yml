@@ -70,7 +70,8 @@ jobs:
           url="https://github.com/$REPO/releases/download/v$VERSION/ClaudePanel_${VERSION}_universal.app.tar.gz"
 
           # Same update for both Mac processors, next to the Windows entry
-          gh release download "v$VERSION" --repo "$REPO" --pattern latest.json --dir "$RUNNER_TEMP"
+          # latest.json is public: no token needed to read it
+          curl -fsSL -o "$RUNNER_TEMP/latest.json" "https://github.com/$REPO/releases/download/v$VERSION/latest.json"
           jq --arg sig "$sig" --arg url "$url" \
             '.platforms["darwin-aarch64"] = {signature: $sig, url: $url}
              | .platforms["darwin-x86_64"] = {signature: $sig, url: $url}' \

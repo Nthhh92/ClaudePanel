@@ -131,15 +131,15 @@ function installedItem(g, q) {
   for (var j = 0; j < skills.length; j++) {
     var s = skills[j];
     body += '<div class="skill" title="' + esc(s.description) + '"><div class="sname">' + esc(s.name) +
-      '</div><div class="cmd" onclick="copyCmd(event, \'' + esc(s.command) + '\')">' + esc(s.command) + '</div></div>';
+      '</div><div class="cmd" data-act="copy" data-arg="' + esc(s.command) + '">' + esc(s.command) + '</div></div>';
   }
   if (!skills.length) body = '<div class="about">' + esc(t("skills.noSkill")) + '</div>';
   if (g.id) {
-    body += '<div class="foot"><span class="link" onclick="uninstall(\'' + esc(g.id) + '\')">' +
+    body += '<div class="foot"><span class="link" data-act="uninstall" data-arg="' + esc(g.id) + '">' +
       esc(t(confirmId === g.id ? "skills.confirm" : "skills.uninstall")) + '</span></div>';
   }
   return '<div class="item' + (isOpen ? " open" : "") + '">' +
-    '<div class="head" onclick="toggle(\'' + esc(key) + '\')"><div class="chev">&#8250;</div>' +
+    '<div class="head" data-act="toggle" data-arg="' + esc(key) + '"><div class="chev">&#8250;</div>' +
     '<div class="txt"><div class="name">' + esc(g.plugin) + '</div></div>' +
     '<div class="count">' + skills.length + '</div></div>' +
     '<div class="body">' + body + '</div></div>';
@@ -150,17 +150,15 @@ function availableItem(p, why) {
   var key = "a:" + p.pluginId, names = skillsOf(p), chips = "";
   for (var i = 0; i < names.length; i++) chips += '<span>' + esc(names[i]) + '</span>';
   var verified = isVerified(p.marketplaceName);
-  var click = verified
-    ? "install('" + esc(p.pluginId) + "')"
-    : "askInstall('" + esc(p.pluginId) + "', '" + esc(p.name) + "')";
+  var click = 'data-act="' + (verified ? "install" : "askInstall") + '" data-arg="' + esc(p.pluginId) + '"';
   var btn = installedIds[p.pluginId] ? '<div class="tag-installed">' + esc(t("skills.installed")) + '</div>'
     : pending === p.pluginId ? '<div class="pill busy">…</div>'
-    : '<div class="pill' + (verified ? '' : ' caution') + '" onclick="stop(event); ' + click + '">' + esc(t("skills.install")) + '</div>';
+    : '<div class="pill' + (verified ? '' : ' caution') + '" ' + click + '>' + esc(t("skills.install")) + '</div>';
   var note = verified ? "" :
     '<div class="note">' + warnSvg(14) +
     '<div>' + esc(t("skills.unverified")) + '</div></div>';
   return '<div class="item' + (opened[key] ? " open" : "") + '">' +
-    '<div class="head" onclick="toggle(\'' + esc(key) + '\')"><div class="chev">&#8250;</div>' +
+    '<div class="head" data-act="toggle" data-arg="' + esc(key) + '"><div class="chev">&#8250;</div>' +
     '<div class="txt"><div class="name">' + esc(p.name) + (verified ? '' : warnSvg(15)) + '</div>' +
     (why ? '<div class="why">' + esc(why) + '</div>' : '<div class="desc">' + esc(p.description) + '</div>') + '</div>' +
     btn + '</div>' +
@@ -330,7 +328,7 @@ function render() {
   if (!raw && aiOn()) {
     var tries = "", ideas = t("ai.tries");
     for (var x = 0; x < ideas.length; x++)
-      tries += '<span onclick="tryQuery(\'' + esc(ideas[x]) + '\')">' + esc(ideas[x]) + '</span>';
+      tries += '<span data-act="try" data-arg="' + esc(ideas[x]) + '">' + esc(ideas[x]) + '</span>';
     html += '<div class="section">' + esc(t("sec.try")) + '</div><div class="tries">' + tries + '</div>';
   }
 
@@ -352,7 +350,7 @@ function render() {
   if (repo) {
     items = '<div class="item"><div class="head"><div class="chev"></div><div class="txt"><div class="name">' + esc(repo) +
       warnSvg(15) + '</div><div class="desc">' + esc(t("skills.repo")) + '</div></div>' +
-      '<div class="pill caution" onclick="askAddRepo(\'' + esc(repo) + '\')">' + esc(t("skills.add")) + '</div></div></div>' + items;
+      '<div class="pill caution" data-act="addRepo" data-arg="' + esc(repo) + '">' + esc(t("skills.add")) + '</div></div></div>' + items;
   }
   if (items) html += '<div class="section">' + esc(t(q ? "sec.toInstall" : "sec.popular")) + '</div><div class="box">' + items + '</div>';
 
@@ -404,3 +402,26 @@ function copyCmd(e, cmd) {
   stop(e);
   navigator.clipboard.writeText(cmd).then(function () { toast(t("toast.copied", { c: cmd })); });
 }
+
+// Clicks in the list say what to do in data-act and on what in data-arg, never
+// as inline code: a plugin or skill name with a quote in it stays plain text.
+$("list").addEventListener("click", function (e) {
+  var el = e.target.closest("[data-act]");
+  if (!el || !$("list").contains(el)) return;
+  var arg = el.getAttribute("data-arg");
+  switch (el.getAttribute("data-act")) {
+    case "toggle": toggle(arg); break;
+    case "copy": copyCmd(e, arg); break;
+    case "uninstall": uninstall(arg); break;
+    case "install": stop(e); install(arg); break;
+    case "askInstall":
+      stop(e);
+      for (var i = 0; i < available.length; i++)
+        if (available[i].pluginId === arg) { askInstall(arg, available[i].name); break; }
+      break;
+    case "try": tryQuery(arg); break;
+    case "addRepo": askAddRepo(arg); break;
+  }
+});
+$("q").addEventListener("input", onSearch);
+$("aiSearch").addEventListener("submit", function (e) { e.preventDefault(); aiSearch(); });

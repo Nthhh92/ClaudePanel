@@ -104,7 +104,7 @@ fn code_signed_in() -> bool {
     read_json(&home.join(".claude.json")).map_or(false, |j| j["oauthAccount"].is_object())
 }
 
-fn app_location() -> Option<String> {
+pub fn app_location() -> Option<String> {
     #[cfg(windows)]
     {
         let local = PathBuf::from(std::env::var_os("LOCALAPPDATA").unwrap_or_default());

@@ -688,3 +688,6 @@ function applyI18n(root) {
     if (el.hasAttribute("data-i18n-aria")) el.setAttribute("aria-label", t(el.getAttribute("data-i18n-aria")));
   }
 }
+
+// Translate the page as soon as the texts are loaded
+applyI18n();

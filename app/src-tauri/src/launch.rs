@@ -1,6 +1,6 @@
 // Opens Claude Code, the Claude app and web pages, and runs Anthropic's
 // official Claude Code installer in a visible terminal.
-use crate::detect::{hidden, home};
+use crate::detect::{app_location, code_path, hidden, home};
 use std::path::Path;
 use std::process::Command;
 
@@ -21,8 +21,13 @@ fn in_terminal(script: &str) -> Result<(), String> {
 }
 
 /// Signed out is fine: Claude Code asks to log in when it starts.
+/// Only the Claude Code found on this machine, whatever the page asks for.
 #[tauri::command]
 pub fn open_code(path: String) -> Result<(), String> {
+    let found = code_path().ok_or("err.noCode")?;
+    if Path::new(&path) != found {
+        return Err("err.badName".into());
+    }
     #[cfg(windows)]
     {
         let dir = Path::new(&path).parent().ok_or("err.badName")?;
@@ -90,8 +95,12 @@ pub fn install_code(texts: InstallTexts) -> Result<(), String> {
     }
 }
 
+/// Only the Claude app found on this machine, whatever the page asks for.
 #[tauri::command]
 pub fn open_app(app: String) -> Result<(), String> {
+    if app_location().as_deref() != Some(app.as_str()) {
+        return Err("err.badName".into());
+    }
     #[cfg(windows)]
     {
         if app == "msix" {

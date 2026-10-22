@@ -17,7 +17,7 @@
     </div>
 
     <div class="cards">
-      <div class="card" id="cardCode" onclick="openCode()">
+      <div class="card" id="cardCode" data-click="openCode">
         <div class="icon term">
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="5 7 10 12 5 17"></polyline><line x1="13" y1="17" x2="19" y2="17"></line>
@@ -27,7 +27,7 @@
         <span>Claude Code</span>
         <small id="cardCodeHint" data-i18n="card.terminal">Terminal</small>
       </div>
-      <div class="card" id="cardApp" onclick="openApp()">
+      <div class="card" id="cardApp" data-click="openApp">
         <div class="icon app">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
             <line x1="12" y1="3" x2="12" y2="21"></line><line x1="3" y1="12" x2="21" y2="12"></line>
@@ -38,7 +38,7 @@
         <span>Claude</span>
         <small id="cardAppHint" data-i18n="card.application">Application</small>
       </div>
-      <div class="card" onclick="openSkills()">
+      <div class="card" data-click="openSkills">
         <div class="icon skills">
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round">
             <rect x="4" y="4" width="6.5" height="6.5" rx="1.8"></rect><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.8"></rect>
@@ -53,10 +53,10 @@
     <div class="update" id="updBanner">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5e5ce6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><polyline points="7 10 12 15 17 10"></polyline><path d="M5 20h14"></path></svg>
       <span id="updText"></span>
-      <div class="pill" onclick="startUpdate()" data-i18n="upd.button">Mettre à jour</div>
+      <div class="pill" data-click="startUpdate" data-i18n="upd.button">Mettre à jour</div>
     </div>
 
-    <div class="gear" title="Réglages" data-i18n-title="home.settings" onclick="openSettings()">
+    <div class="gear" title="Réglages" data-i18n-title="home.settings" data-click="openSettings">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"></circle>
         <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path>
@@ -67,19 +67,19 @@
   <!-- Skills -->
   <div class="view" id="skills">
     <div class="bar">
-      <div class="back" onclick="closeView()">&#8249;</div>
+      <div class="back" data-click="closeView">&#8249;</div>
       <h2>Skills</h2>
       <div class="state" id="state"></div>
     </div>
-    <form class="ai-search" id="aiSearch" onsubmit="aiSearch(); return false;">
+    <form class="ai-search" id="aiSearch">
       <div class="ai-inner">
         <svg class="ai-spark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5e5ce6" stroke-width="2" stroke-linejoin="round">
           <path d="M12 3c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7z"></path>
           <path d="M19 15.5c.25 1.8.95 2.5 2.75 2.75-1.8.25-2.5.95-2.75 2.75-.25-1.8-.95-2.5-2.75-2.75 1.8-.25 2.5-.95 2.75-2.75z"></path>
         </svg>
         <input class="search" id="q" type="text" maxlength="200" autocomplete="off" spellcheck="false"
-          placeholder="Rechercher un skill…" aria-label="Recherche de skills" data-i18n-ph="search.phOff" data-i18n-aria="search.aria" oninput="onSearch()">
-        <button class="ai-switch" id="aiSwitch" type="button" role="switch" aria-checked="false" onclick="toggleAi()">
+          placeholder="Rechercher un skill…" aria-label="Recherche de skills" data-i18n-ph="search.phOff" data-i18n-aria="search.aria">
+        <button class="ai-switch" id="aiSwitch" type="button" role="switch" aria-checked="false" data-click="toggleAi">
           <span data-i18n="ai.switch">Recherche IA</span><span class="track"><span class="knob"></span></span>
         </button>
       </div>
@@ -91,24 +91,24 @@
   <!-- Settings -->
   <div class="view" id="settings">
     <div class="bar">
-      <div class="back" onclick="closeView()">&#8249;</div>
+      <div class="back" data-click="closeView">&#8249;</div>
       <h2 data-i18n="set.title">Réglages</h2>
     </div>
     <div class="settings">
       <div class="box">
         <div class="row">
           <div class="txt"><b data-i18n="set.name">Ton prénom</b><span data-i18n="set.nameHint">Pour te dire bonjour.</span></div>
-          <input id="setName" type="text" maxlength="24" placeholder="Ton prénom" data-i18n-ph="set.namePh" onkeydown="if (event.key === 'Enter') saveName()">
-          <div class="pill" onclick="saveName()">OK</div>
+          <input id="setName" type="text" maxlength="24" placeholder="Ton prénom" data-i18n-ph="set.namePh" data-enter="saveName">
+          <div class="pill" data-click="saveName">OK</div>
         </div>
       </div>
       <div class="box" style="margin-top:14px">
-        <div class="row link-row" onclick="checkUpdate(true)">
+        <div class="row link-row" data-click="checkUpdate" data-arg="true">
           <div class="txt"><b data-i18n="set.check">Rechercher une mise à jour</b><span data-i18n="set.checkHint">ClaudePanel vérifie aussi tout seul à chaque lancement.</span></div>
         </div>
       </div>
       <div class="box" style="margin-top:14px">
-        <div class="row danger" onclick="startGoodbye()">
+        <div class="row danger" data-click="startGoodbye">
           <div class="txt"><b data-i18n="set.uninstall">Désinstaller ClaudePanel</b><span data-i18n="set.uninstallHint">Claude, Claude Code et tes skills restent installés.</span></div>
         </div>
       </div>
@@ -190,14 +190,14 @@
         </div>
         <h1 data-i18n="tour.name">Comment tu t’appelles ?</h1>
         <p class="lead" data-i18n="tour.nameLead">Le panel te dira bonjour avec ton prénom.</p>
-        <input class="field" id="tourName" type="text" maxlength="24" placeholder="Ton prénom" data-i18n-ph="set.namePh" onkeydown="if (event.key === 'Enter') tourNext()">
+        <input class="field" id="tourName" type="text" maxlength="24" placeholder="Ton prénom" data-i18n-ph="set.namePh" data-enter="tourNext">
         <p class="fine" data-i18n="tour.nameFine">Tu pourras le changer plus tard dans les réglages.</p>
       </div>
     </div>
 
     <div class="nav">
-      <div class="btn ghost off" id="tourBack" onclick="tourBack()" data-i18n="btn.back">Retour</div>
-      <div class="btn" id="tourGo" onclick="tourNext()" data-i18n="btn.continue">Continuer</div>
+      <div class="btn ghost off" id="tourBack" data-click="tourBack" data-i18n="btn.back">Retour</div>
+      <div class="btn" id="tourGo" data-click="tourNext" data-i18n="btn.continue">Continuer</div>
     </div>
   </div>
 
@@ -238,8 +238,8 @@
     </div>
 
     <div class="nav">
-      <div class="btn ghost" id="byeCancel" onclick="cancelGoodbye()" data-i18n="btn.cancel">Annuler</div>
-      <div class="btn danger" id="byeGo" onclick="byeNext()" data-i18n="btn.uninstall">Désinstaller</div>
+      <div class="btn ghost" id="byeCancel" data-click="cancelGoodbye" data-i18n="btn.cancel">Annuler</div>
+      <div class="btn danger" id="byeGo" data-click="byeNext" data-i18n="btn.uninstall">Désinstaller</div>
     </div>
   </div>
 
@@ -274,8 +274,8 @@
       </div>
     </div>
     <div class="nav">
-      <div class="btn ghost" onclick="closeAiIntro(false)" data-i18n="btn.later">Plus tard</div>
-      <div class="btn" id="aiIntroGo" onclick="closeAiIntro(true)" data-i18n="intro.go">Activer la recherche IA</div>
+      <div class="btn ghost" data-click="closeAiIntro" data-arg="false" data-i18n="btn.later">Plus tard</div>
+      <div class="btn" id="aiIntroGo" data-click="closeAiIntro" data-arg="true" data-i18n="intro.go">Activer la recherche IA</div>
     </div>
   </div>
 
@@ -290,7 +290,7 @@
       </div>
     </div>
     <div class="nav">
-      <div class="btn ghost off" id="updClose" onclick="closeUpdate()" data-i18n="btn.close">Fermer</div>
+      <div class="btn ghost off" id="updClose" data-click="closeUpdate" data-i18n="btn.close">Fermer</div>
     </div>
   </div>
 
@@ -305,7 +305,7 @@
       </div>
     </div>
     <div class="nav">
-      <div class="btn" onclick="closeNews()" data-i18n="news.ok">Super !</div>
+      <div class="btn" data-click="closeNews" data-i18n="news.ok">Super !</div>
     </div>
   </div>
 
@@ -317,8 +317,8 @@
         <p id="sheetMsg"></p>
       </div>
       <div class="actions">
-        <div class="act cancel" onclick="closeSheet()" data-i18n="btn.cancel">Annuler</div>
-        <div class="act go" id="sheetGo" onclick="sheetGo()" data-i18n="sheet.installAnyway">Installer quand même</div>
+        <div class="act cancel" data-click="closeSheet" data-i18n="btn.cancel">Annuler</div>
+        <div class="act go" id="sheetGo" data-click="sheetGo" data-i18n="sheet.installAnyway">Installer quand même</div>
       </div>
     </div>
   </div>
@@ -327,7 +327,6 @@
   <div id="warp"></div>
 
   <script src="i18n.js"></script>
-  <script>applyI18n();</script>
   <script src="changelog.js"></script>
   <script src="sprite.js"></script>
   <script src="app.js"></script>

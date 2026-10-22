@@ -8,6 +8,22 @@ function esc(s) {
 }
 function call(cmd, args) { return window.__TAURI__.core.invoke(cmd, args || {}); }
 
+// Buttons in index.html name their function in data-click (data-arg: true or
+// false) and fields in data-enter, instead of inline code: the CSP forbids it.
+var ACTIONS = ["openCode", "openApp", "openSkills", "startUpdate", "openSettings", "closeView", "toggleAi",
+  "saveName", "checkUpdate", "startGoodbye", "tourBack", "tourNext", "cancelGoodbye", "byeNext",
+  "closeAiIntro", "closeUpdate", "closeNews", "closeSheet", "sheetGo"];
+function runAct(name, arg) {
+  if (ACTIONS.indexOf(name) >= 0) window[name](arg === "true" ? true : arg === "false" ? false : undefined);
+}
+document.addEventListener("click", function (e) {
+  var el = e.target.closest("[data-click]");
+  if (el) runAct(el.getAttribute("data-click"), el.getAttribute("data-arg"));
+});
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Enter" && e.target.hasAttribute && e.target.hasAttribute("data-enter")) runAct(e.target.getAttribute("data-enter"));
+});
+
 var settings = { name: "", onboarded: false };
 
 /* ---------- Clock and weather ---------- */

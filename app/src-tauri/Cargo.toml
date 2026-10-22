@@ -1,6 +1,6 @@
 [package]
 name = "claudepanel"
-version = "2.0.0"
+version = "2.0.1"
 description = "Ouvre Claude, Claude Code et tes skills en un clic"
 edition = "2021"
 
@@ -11,6 +11,7 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+tauri-plugin-updater = "2"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.52"

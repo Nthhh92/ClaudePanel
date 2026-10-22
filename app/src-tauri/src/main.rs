@@ -8,9 +8,12 @@ mod launch;
 mod migrate;
 mod settings;
 mod skills;
+mod update;
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(update::Pending::default())
         .setup(|app| {
             migrate::run(app.handle());
             Ok(())
@@ -28,6 +31,8 @@ fn main() {
             settings::save_settings,
             settings::platform,
             settings::uninstall_self,
+            update::check_update,
+            update::install_update,
         ])
         .run(tauri::generate_context!())
         .expect("ClaudePanel n'a pas pu démarrer");

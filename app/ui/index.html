@@ -50,6 +50,12 @@
       </div>
     </div>
 
+    <div class="update" id="updBanner">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5e5ce6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><polyline points="7 10 12 15 17 10"></polyline><path d="M5 20h14"></path></svg>
+      <span id="updText"></span>
+      <div class="pill" onclick="startUpdate()">Mettre à jour</div>
+    </div>
+
     <div class="gear" title="Réglages" onclick="openSettings()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"></circle>
@@ -84,11 +90,16 @@
         </div>
       </div>
       <div class="box" style="margin-top:14px">
+        <div class="row link-row" onclick="checkUpdate(true)">
+          <div class="txt"><b>Rechercher une mise à jour</b><span>ClaudePanel vérifie aussi tout seul à chaque lancement.</span></div>
+        </div>
+      </div>
+      <div class="box" style="margin-top:14px">
         <div class="row danger" onclick="startGoodbye()">
           <div class="txt"><b>Désinstaller ClaudePanel</b><span>Claude, Claude Code et tes skills restent installés.</span></div>
         </div>
       </div>
-      <p class="version">ClaudePanel 2.0 · aucune donnée collectée<br>Outil indépendant, non affilié à Anthropic.</p>
+      <p class="version"><span id="verText">ClaudePanel</span> · aucune donnée collectée<br>Outil indépendant, non affilié à Anthropic.</p>
     </div>
   </div>
 
@@ -219,6 +230,36 @@
     </div>
   </div>
 
+  <!-- Updating -->
+  <div class="flow" id="upd">
+    <div class="step on">
+      <div class="col" style="padding-top:40px">
+        <h1>Mise à jour…</h1>
+        <div class="road" id="updRoad"><div class="track"><div class="fill" id="updFill"></div></div></div>
+        <p class="doing" id="updDoing">Téléchargement</p>
+        <p class="err" id="updErr"></p>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="btn ghost off" id="updClose" onclick="closeUpdate()">Fermer</div>
+    </div>
+  </div>
+
+  <!-- What's new, once after an update -->
+  <div class="flow" id="news">
+    <div class="step on">
+      <div class="col" style="padding-top:6px">
+        <div class="stage" id="newsStage"></div>
+        <h1 id="newsTitle">Quoi de neuf ?</h1>
+        <p class="lead" id="newsDate"></p>
+        <div class="box news-list" id="newsList"></div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="btn" onclick="closeNews()">Super !</div>
+    </div>
+  </div>
+
   <div class="scrim" id="scrim">
     <div class="sheet">
       <div class="pad">
@@ -236,6 +277,7 @@
   <div class="toast" id="toast"></div>
   <div id="warp"></div>
 
+  <script src="changelog.js"></script>
   <script src="sprite.js"></script>
   <script src="app.js"></script>
   <script src="skills.js"></script>

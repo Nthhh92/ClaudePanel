@@ -27,6 +27,8 @@ pub fn run(app: &AppHandle) {
                 .arg(&script)
                 .arg("-Dir")
                 .arg(&dir)
+                .arg("-App")
+                .arg(std::env::current_exe().unwrap_or_default())
                 .spawn();
         }
     }

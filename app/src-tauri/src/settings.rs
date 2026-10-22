@@ -12,6 +12,9 @@ pub struct Settings {
     name: String,
     #[serde(default)]
     onboarded: bool,
+    /// Version seen at the last launch, to show "what's new" after an update
+    #[serde(default, rename = "lastVersion")]
+    last_version: String,
 }
 
 fn file(app: &AppHandle) -> Result<PathBuf, String> {
@@ -42,7 +45,7 @@ pub fn adopt_name(app: &AppHandle, user_json: &std::path::Path) {
     let name = crate::detect::read_json(user_json)
         .and_then(|j| j["name"].as_str().map(str::to_string))
         .unwrap_or_default();
-    let _ = save_settings(app.clone(), Settings { name, onboarded: false });
+    let _ = save_settings(app.clone(), Settings { name, ..Default::default() });
 }
 
 #[tauri::command]

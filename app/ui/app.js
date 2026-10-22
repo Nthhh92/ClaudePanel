@@ -334,13 +334,116 @@ function goodbye() {
   });
 }
 
+/* ---------- Updates ---------- */
+
+var version = "";
+
+// Compares "2.10.1" with "2.9.0": positive when a is newer
+function compareVersions(a, b) {
+  var x = String(a).split("."), y = String(b).split(".");
+  for (var i = 0; i < 3; i++) {
+    var d = (parseInt(x[i], 10) || 0) - (parseInt(y[i], 10) || 0);
+    if (d) return d;
+  }
+  return 0;
+}
+
+// "2.1.0" -> "2.1"
+function shortVersion(v) { return String(v).replace(/\.0$/, ""); }
+
+function checkUpdate(manual) {
+  return call("check_update").then(function (u) {
+    if (u) {
+      $("updText").innerHTML = "ClaudePanel " + esc(shortVersion(u.version)) + " est disponible";
+      $("updBanner").className = "update on";
+      if (manual) closeView();
+    } else if (manual) {
+      toast("Tu as déjà la dernière version ✓");
+    }
+  }, function (e) {
+    if (manual) toast("Impossible de vérifier pour l’instant");
+  });
+}
+
+// Downloads with the robot walking along the bar; the app restarts on its own
+function startUpdate() {
+  $("upd").style.display = "block";
+  $("updErr").innerHTML = "";
+  $("updClose").className = "btn ghost off";
+  $("updFill").style.width = "0";
+  $("updDoing").innerHTML = "Téléchargement…";
+  var bot = walker("updRoad");
+  var stopListening = window.__TAURI__.event.listen("update-progress", function (e) {
+    $("updFill").style.width = Math.round(e.payload * 100) + "%";
+    bot.to(e.payload);
+    if (e.payload >= 1) $("updDoing").innerHTML = "Installation… ClaudePanel va redémarrer";
+  });
+  call("install_update").catch(function (e) {
+    stopListening.then(function (stop) { stop(); });
+    bot.stop(); bot.arms("droop"); bot.mood = "sad"; bot.eyes("sad");
+    $("updErr").innerHTML = "La mise à jour n’a pas pu se faire : " + esc(e);
+    $("updClose").className = "btn ghost";
+  });
+}
+
+function closeUpdate() {
+  $("upd").style.display = "none";
+  var old = $("updRoad").getElementsByClassName("bot");
+  while (old.length) old[0].parentNode.removeChild(old[0]);
+}
+
+// Once, after an update: what changed since the version seen last time
+function showNews(since) {
+  var rows = "", date = "";
+  for (var i = 0; i < CHANGELOG.length; i++) {
+    var c = CHANGELOG[i];
+    if (compareVersions(c.version, since) <= 0 || compareVersions(c.version, version) > 0) continue;
+    if (!date) date = c.date;
+    for (var j = 0; j < c.items.length; j++)
+      rows += '<div class="row"><div class="icon sm new">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e5ce6" stroke-width="2.2" stroke-linejoin="round">' +
+        '<path d="M12 3c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7z"></path></svg></div>' +
+        '<div class="txt"><b>' + esc(c.items[j][0]) + '</b><span>' + esc(c.items[j][1]) + '</span></div></div>';
+  }
+  if (!rows) return;
+  $("newsTitle").innerHTML = "Quoi de neuf dans la " + esc(shortVersion(version)) + " ?";
+  $("newsDate").innerHTML = date ? "Mise à jour du " + esc(date) : "";
+  $("newsList").innerHTML = rows;
+  $("newsStage").innerHTML = "";
+  $("news").style.display = "block";
+
+  // A happy robot hopping around
+  var b = stageBot("newsStage");
+  b.scale(0);
+  b.pop(function () {
+    (function bounce() {
+      if ($("news").style.display === "none") return;
+      b.face(Math.random() < 0.5 ? 1 : -1);
+      b.hop(14, function () { setTimeout(bounce, rand(500, 1300)); });
+    })();
+  });
+}
+
+function closeNews() { $("news").style.display = "none"; }
+
 /* ---------- Start ---------- */
 
-call("get_settings").then(function (s) {
-  settings = s;
+Promise.all([call("get_settings"), window.__TAURI__.app.getVersion()]).then(function (r) {
+  settings = r[0];
+  version = r[1];
+  $("verText").innerHTML = "ClaudePanel " + esc(shortVersion(version));
   greet();
-  if (!s.onboarded) {
+  if (!settings.onboarded) {
     $("tour").style.display = "block";
     tourShow(0);
+  } else if (settings.lastVersion && compareVersions(version, settings.lastVersion) > 0) {
+    showNews(settings.lastVersion);
   }
+  // A fresh install has no "last version": it just starts counting from here
+  if (settings.lastVersion !== version) {
+    settings.lastVersion = version;
+    call("save_settings", { settings: settings });
+  }
+  setTimeout(checkUpdate, 4000);
+  setInterval(checkUpdate, 6 * 3600 * 1000);
 });

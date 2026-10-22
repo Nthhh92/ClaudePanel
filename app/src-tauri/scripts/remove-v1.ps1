@@ -1,6 +1,6 @@
 # Run hidden by ClaudePanel 2 on first launch: removes ClaudePanel 1.x from -Dir.
 # Only what 1.x put there: the folder was picked by the user and may hold other things.
-param([string]$Dir)
+param([string]$Dir, [string]$App)
 if (-not (Test-Path (Join-Path $Dir "panel.hta"))) { exit }
 
 # The 1.x panel window and its hidden PowerShell helpers, if open
@@ -14,6 +14,17 @@ $wsh = New-Object -ComObject WScript.Shell
 foreach ($lnk in "$([Environment]::GetFolderPath('Desktop'))\ClaudePanel.lnk", "$([Environment]::GetFolderPath('Programs'))\ClaudePanel.lnk") {
   if ((Test-Path $lnk) -and $wsh.CreateShortcut($lnk).Arguments -like "*$Dir\panel.hta*") { Remove-Item $lnk -Force }
 }
+
+# The 2.x shortcuts come with an empty icon path, and Windows keeps showing the
+# cached 1.x icon (now deleted) as a blank page: point them at the exe's icon
+$pinned = "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\ClaudePanel.lnk"
+foreach ($lnk in "$([Environment]::GetFolderPath('Desktop'))\ClaudePanel.lnk", "$([Environment]::GetFolderPath('Programs'))\ClaudePanel.lnk", $pinned) {
+  if ($App -and (Test-Path $lnk)) {
+    $s = $wsh.CreateShortcut($lnk)
+    if ($s.TargetPath -eq $App) { $s.IconLocation = "$App,0"; $s.Save() }
+  }
+}
+& "$env:SystemRoot\System32\ie4uinit.exe" -show
 
 $files = "panel.hta", "detect.js", "greetings.js", "robot.js", "panel.ico",
          "seticon.ps1", "skills.ps1", "install-code.ps1", "uninstall.ps1", "D*sinstaller ClaudePanel.exe"

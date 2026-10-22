@@ -4,6 +4,18 @@
 // uses its French items as the release notes.
 var CHANGELOG = [
   {
+    version: "2.2.1",
+    date: "2026-10-22",
+    items: {
+      fr: [["Météo plus discrète", "L’accueil n’affiche plus ta ville : seulement la température et le temps."]],
+      en: [["Quieter weather", "The home screen no longer shows your city: just the temperature and the weather."]],
+      es: [["Tiempo más discreto", "La pantalla de inicio ya no muestra tu ciudad: solo la temperatura y el tiempo."]],
+      de: [["Dezenteres Wetter", "Der Startbildschirm zeigt deine Stadt nicht mehr an: nur Temperatur und Wetter."]],
+      it: [["Meteo più discreto", "La schermata iniziale non mostra più la tua città: solo la temperatura e il tempo."]],
+      pt: [["Clima mais discreto", "A tela inicial não mostra mais a sua cidade: só a temperatura e o tempo."]]
+    }
+  },
+  {
     version: "2.2.0",
     date: "2026-10-22",
     items: {

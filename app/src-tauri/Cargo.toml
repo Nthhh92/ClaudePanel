@@ -1,6 +1,6 @@
 [package]
 name = "claudepanel"
-version = "2.2.0"
+version = "2.2.1"
 description = "Ouvre Claude, Claude Code et tes skills en un clic"
 edition = "2021"
 

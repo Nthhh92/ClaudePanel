@@ -26,7 +26,7 @@ fetch("https://wttr.in/?format=j1&lang=" + LANG)
   .then(function (d) {
     var c = d.current_condition[0], local = c["lang_" + LANG];
     var desc = local ? local[0].value : c.weatherDesc[0].value;
-    $("weather").innerHTML = "<b>" + esc(c.temp_C) + "°</b>" + esc(desc) + "<br>" + esc(d.nearest_area[0].areaName[0].value);
+    $("weather").innerHTML = "<b>" + esc(c.temp_C) + "°</b>" + esc(desc);
   })
   .catch(function () {});
 

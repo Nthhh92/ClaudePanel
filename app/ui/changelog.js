@@ -2,6 +2,13 @@
 // after an update. release.ps1 refuses to publish a version without an entry.
 var CHANGELOG = [
   {
+    version: "2.0.2",
+    date: "22 octobre 2026",
+    items: [
+      ["Connexion à Claude bien reconnue", "Depuis sa dernière mise à jour, l’app Claude range ses données ailleurs : ClaudePanel les retrouve et n’affiche plus « Non connecté » à tort."]
+    ]
+  },
+  {
     version: "2.0.1",
     date: "22 octobre 2026",
     items: [

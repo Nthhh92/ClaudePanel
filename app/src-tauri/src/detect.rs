@@ -112,6 +112,10 @@ fn app_signed_in() -> bool {
     #[cfg(windows)]
     {
         let local = PathBuf::from(std::env::var_os("LOCALAPPDATA").unwrap_or_default());
+        // Since app 3.1623.1 its data lives in Claude-Data\<package>; before, in the package's LocalCache
+        if let Ok(dirs) = fs::read_dir(local.join("Claude-Data")) {
+            configs.extend(dirs.flatten().map(|d| d.path().join("config.json")));
+        }
         configs.push(local.join(r"Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\config.json"));
         if let Some(appdata) = std::env::var_os("APPDATA") {
             configs.push(PathBuf::from(appdata).join("Claude").join("config.json"));

@@ -4,6 +4,18 @@
 // uses its French items as the release notes.
 var CHANGELOG = [
   {
+    version: "2.2.7",
+    date: "2026-10-22",
+    items: {
+      fr: [["ClaudePanel arrive sur Mac", "Une version pour Mac (Apple silicon et Intel) est maintenant disponible au téléchargement."]],
+      en: [["ClaudePanel comes to Mac", "A Mac version (Apple silicon and Intel) is now available to download."]],
+      es: [["ClaudePanel llega a Mac", "Ya se puede descargar una versión para Mac (Apple silicon e Intel)."]],
+      de: [["ClaudePanel kommt auf den Mac", "Eine Mac-Version (Apple Silicon und Intel) steht jetzt zum Download bereit."]],
+      it: [["ClaudePanel arriva su Mac", "Una versione per Mac (Apple silicon e Intel) è ora disponibile da scaricare."]],
+      pt: [["O ClaudePanel chega ao Mac", "Uma versão para Mac (Apple silicon e Intel) já está disponível para download."]]
+    }
+  },
+  {
     version: "2.2.6",
     date: "2026-10-22",
     items: {

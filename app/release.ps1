@@ -1,6 +1,6 @@
 ﻿# Publishes a new ClaudePanel version: builds the signed installer and puts it,
 # with latest.json (what the app checks for updates), on the public
-# ClaudePanel-releases repository.
+# ClaudePanel-releases repository, then starts the Mac build on GitHub.
 #
 #   .\release.ps1 2.1.0              add the version's news to ui\changelog.js first
 #   .\release.ps1 2.1.0 -NoPublish   build and sign only (latest.json points at -BaseUrl)
@@ -83,3 +83,9 @@ if ($NoPublish) { Write-Host "Prêt (non publié) : $bundle"; return }
 & $gh release create "v$Version" "$bundle\$name" "$bundle\latest.json" --repo $repo --title "ClaudePanel $Version" --notes-file "$bundle\notes.md"
 if ($LASTEXITCODE) { throw "La publication a échoué" }
 Write-Host "Publié : https://github.com/$repo/releases/tag/v$Version"
+
+# The Mac version is built on GitHub (.github/workflows/release-mac.yml) and
+# added to this release a few minutes later
+& $gh workflow run release-mac.yml --repo Nthhh92/ClaudePanel -f version=$Version
+if ($LASTEXITCODE) { Write-Host "La version Mac n'a pas pu être lancée : relance-la depuis l'onglet Actions" -ForegroundColor Yellow }
+else { Write-Host "Version Mac en cours : https://github.com/Nthhh92/ClaudePanel/actions" }

@@ -2,6 +2,14 @@
 // after an update. release.ps1 refuses to publish a version without an entry.
 var CHANGELOG = [
   {
+    version: "2.1.1",
+    date: "22 octobre 2026",
+    items: [
+      ["La recherche IA, si tu le veux", "Elle utilise tes crédits Claude : elle est désormais désactivée par défaut, avec un interrupteur dans la barre de recherche."],
+      ["Tout savoir avant d’activer", "Une page t’explique ce qu’elle consomme (très peu) avant que tu l’actives."]
+    ]
+  },
+  {
     version: "2.1.0",
     date: "22 octobre 2026",
     items: [

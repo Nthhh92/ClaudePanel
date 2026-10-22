@@ -5,11 +5,13 @@
 // The model gets no tools, no MCP servers and none of the user's settings,
 // answers in a fixed JSON shape, and the panel only ever shows plugins from
 // the catalog: whatever is asked, nothing else can come out of it.
+// Off by default: it runs only once the user turned it on (settings.aiSearch).
 use crate::detect::claude_command;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::io::Write;
 use std::process::Stdio;
+use tauri::AppHandle;
 
 const MAX_QUERY: usize = 200;
 
@@ -47,6 +49,15 @@ pub struct Pick {
     why: String,
 }
 
+/// AI search spends the user's own Claude usage: never without their go-ahead.
+fn check_enabled(app: &AppHandle) -> Result<(), String> {
+    if crate::settings::ai_search_enabled(app) {
+        Ok(())
+    } else {
+        Err("La recherche IA est désactivée.".into())
+    }
+}
+
 fn clean_query(query: &str) -> Result<String, String> {
     let q: String = query.trim().chars().take(MAX_QUERY).collect();
     if q.chars().count() < 3 {
@@ -82,7 +93,8 @@ fn ask(system: &str, schema: Value, input: String) -> Result<Value, String> {
 }
 
 #[tauri::command]
-pub async fn ai_understand(query: String) -> Result<Understood, String> {
+pub async fn ai_understand(app: AppHandle, query: String) -> Result<Understood, String> {
+    check_enabled(&app)?;
     let q = clean_query(&query)?;
     let schema = json!({
         "type": "object",
@@ -103,7 +115,8 @@ pub async fn ai_understand(query: String) -> Result<Understood, String> {
 }
 
 #[tauri::command]
-pub async fn ai_pick(query: String, candidates: Vec<Candidate>) -> Result<Vec<Pick>, String> {
+pub async fn ai_pick(app: AppHandle, query: String, candidates: Vec<Candidate>) -> Result<Vec<Pick>, String> {
+    check_enabled(&app)?;
     let q = clean_query(&query)?;
     let ids: Vec<String> = candidates.iter().map(|c| c.id.clone()).collect();
     let list: Vec<String> = candidates

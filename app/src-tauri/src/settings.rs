@@ -15,6 +15,13 @@ pub struct Settings {
     /// Version seen at the last launch, to show "what's new" after an update
     #[serde(default, rename = "lastVersion")]
     last_version: String,
+    /// The user agreed to AI search, which uses their own Claude usage. Off until then.
+    #[serde(default, rename = "aiSearch")]
+    ai_search: bool,
+}
+
+pub fn ai_search_enabled(app: &AppHandle) -> bool {
+    get_settings(app.clone()).ai_search
 }
 
 fn file(app: &AppHandle) -> Result<PathBuf, String> {

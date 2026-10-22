@@ -96,7 +96,7 @@ function setState(t) { $("state").innerHTML = t; }
 
 function openSkills() {
   showView("skills");
-  render();
+  syncAi();
   setState("Mise à jour…");
   reload().then(function () { setState(""); }, function () { setState(""); });
 }
@@ -219,14 +219,52 @@ function shortlist(keywords) {
   return scored.slice(0, 60).map(function (s) { return s.p; });
 }
 
+// AI search spends the user's Claude usage: off until they turn it on, after
+// an explanation (the backend refuses too while it is off).
+function aiOn() { return !!settings.aiSearch; }
+
+function syncAi() {
+  $("aiSearch").classList.toggle("on", aiOn());
+  $("aiSwitch").setAttribute("aria-checked", aiOn() ? "true" : "false");
+  $("q").placeholder = aiOn() ? "Décris ce que tu veux faire…" : "Rechercher un skill…";
+  render();
+}
+
+function toggleAi() {
+  if (!aiOn()) { $("aiIntro").style.display = "block"; return; }
+  settings.aiSearch = false;
+  ai.run++;
+  ai.state = "idle";
+  $("aiSearch").classList.remove("thinking");
+  call("save_settings", { settings: settings });
+  syncAi();
+  toast("Recherche IA désactivée");
+}
+
+function closeAiIntro(accept) {
+  $("aiIntro").style.display = "none";
+  if (!accept) return;
+  settings.aiSearch = true;
+  call("save_settings", { settings: settings }).then(function () {
+    syncAi();
+    $("q").focus();
+    toast("Recherche IA activée ✓");
+  }, failed);
+}
+
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape" && $("aiIntro").style.display === "block") closeAiIntro(false);
+});
+
 function aiSearch() {
+  if (!aiOn()) return; // Enter only filters, as you type
   var q = $("q").value.trim();
   if (q.length < 3) { setAiStatus("Décris un peu plus ce que tu veux faire.", "warn"); return; }
   if (ai.state === "busy" && ai.query === q) return;
   var run = ++ai.run;
   ai = { query: q, state: "busy", shortlist: null, picks: null, run: run };
   var bar = $("aiSearch");
-  bar.className = "ai-search thinking";
+  bar.classList.add("thinking");
   setAiStatus("Je comprends ta demande…", "busy");
   render();
 
@@ -262,7 +300,7 @@ function aiSearch() {
       else setAiStatus(String(e), "warn");
       render();
     })
-    .then(function () { if (current()) bar.className = "ai-search"; });
+    .then(function () { if (current()) bar.classList.remove("thinking"); });
 }
 
 function renderAi() {
@@ -292,10 +330,11 @@ function render() {
     list.scrollTop = top;
     return;
   }
-  if (ai.state !== "idle") { ai.state = "idle"; ai.run++; $("aiSearch").className = "ai-search"; }
-  setAiStatus(raw ? "Entrée pour demander à l’IA · la liste se filtre déjà pendant que tu tapes"
+  if (ai.state !== "idle") { ai.state = "idle"; ai.run++; $("aiSearch").classList.remove("thinking"); }
+  if (aiOn()) setAiStatus(raw ? "Entrée pour demander à l’IA · la liste se filtre déjà pendant que tu tapes"
     : "Décris ton besoin et appuie sur Entrée : l’IA trouve les skills qu’il te faut");
-  if (!raw) {
+  else setAiStatus(raw ? "" : "Active la recherche IA pour décrire ton besoin avec tes mots");
+  if (!raw && aiOn()) {
     var tries = "";
     for (var t = 0; t < TRIES.length; t++)
       tries += '<span onclick="tryQuery(\'' + esc(TRIES[t]) + '\')">' + esc(TRIES[t]) + '</span>';

@@ -78,8 +78,10 @@
           <path d="M19 15.5c.25 1.8.95 2.5 2.75 2.75-1.8.25-2.5.95-2.75 2.75-.25-1.8-.95-2.5-2.75-2.75 1.8-.25 2.5-.95 2.75-2.75z"></path>
         </svg>
         <input class="search" id="q" type="text" maxlength="200" autocomplete="off" spellcheck="false"
-          placeholder="Décris ce que tu veux faire…" aria-label="Recherche de skills" oninput="onSearch()">
-        <button class="ai-tag" type="submit" title="Lancer la recherche IA">Recherche IA</button>
+          placeholder="Rechercher un skill…" aria-label="Recherche de skills" oninput="onSearch()">
+        <button class="ai-switch" id="aiSwitch" type="button" role="switch" aria-checked="false" onclick="toggleAi()">
+          <span>Recherche IA</span><span class="track"><span class="knob"></span></span>
+        </button>
       </div>
     </form>
     <div class="ai-status" id="aiStatus" aria-live="polite"></div>
@@ -238,6 +240,42 @@
     <div class="nav">
       <div class="btn ghost" id="byeCancel" onclick="cancelGoodbye()">Annuler</div>
       <div class="btn danger" id="byeGo" onclick="byeNext()">Désinstaller</div>
+    </div>
+  </div>
+
+  <!-- Turning AI search on: what it costs, before it costs anything -->
+  <div class="flow" id="aiIntro" role="dialog" aria-labelledby="aiIntroTitle">
+    <div class="step on">
+      <div class="col">
+        <div class="ai-orb"><div>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5e5ce6" stroke-width="1.9" stroke-linejoin="round">
+            <path d="M12 3c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7z"></path>
+            <path d="M19 15.5c.25 1.8.95 2.5 2.75 2.75-1.8.25-2.5.95-2.75 2.75-.25-1.8-.95-2.5-2.75-2.75 1.8-.25 2.5-.95 2.75-2.75z"></path>
+          </svg>
+        </div></div>
+        <h1 id="aiIntroTitle">La recherche IA</h1>
+        <p class="lead">Décris ton besoin, l’IA choisit les meilleurs skills pour toi.</p>
+        <div class="box">
+          <div class="row"><div class="icon sm app">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round">
+              <line x1="12" y1="3" x2="12" y2="21"></line><line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="5.6" y1="5.6" x2="18.4" y2="18.4"></line><line x1="18.4" y1="5.6" x2="5.6" y2="18.4"></line></svg></div>
+            <div class="txt"><b>Elle utilise tes crédits Claude</b><span>Chaque recherche passe par ton Claude Code, avec ton compte, et compte dans ton utilisation.</span></div></div>
+          <div class="row"><div class="icon sm soft">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18a8 8 0 1 1 16 0"></path><line x1="12" y1="18" x2="8.5" y2="11.5"></line></svg></div>
+            <div class="txt"><b>Très peu gourmande</b><span>Environ 8 000 tokens par recherche avec Haiku, le modèle le plus léger. Seulement quand tu appuies sur Entrée.</span></div></div>
+          <div class="row"><div class="icon sm soft">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"></rect><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"></path></svg></div>
+            <div class="txt"><b>Rien ne sort de chez Anthropic</b><span>Ta demande va uniquement à leurs serveurs. ClaudePanel ne garde rien.</span></div></div>
+          <div class="row"><div class="icon sm soft">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="5"></rect><circle cx="16" cy="12" r="2.6"></circle></svg></div>
+            <div class="txt"><b>Désactivable à tout moment</b><span>Un clic sur l’interrupteur et la recherche redevient locale, sans crédits.</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="btn ghost" onclick="closeAiIntro(false)">Plus tard</div>
+      <div class="btn" id="aiIntroGo" onclick="closeAiIntro(true)">Activer la recherche IA</div>
     </div>
   </div>
 

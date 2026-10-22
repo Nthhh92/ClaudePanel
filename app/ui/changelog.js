@@ -4,6 +4,18 @@
 // uses its French items as the release notes.
 var CHANGELOG = [
   {
+    version: "2.2.5",
+    date: "2026-10-22",
+    items: {
+      fr: [["Installation en un clic", "Plus de pages « Suivant » : un double-clic sur l’installateur et ClaudePanel s’ouvre directement."]],
+      en: [["One-click install", "No more “Next” pages: double-click the installer and ClaudePanel opens right away."]],
+      es: [["Instalación en un clic", "Se acabaron las páginas «Siguiente»: doble clic en el instalador y ClaudePanel se abre directamente."]],
+      de: [["Installation mit einem Klick", "Keine „Weiter“-Seiten mehr: Doppelklick auf das Installationsprogramm und ClaudePanel öffnet sich sofort."]],
+      it: [["Installazione in un clic", "Niente più pagine «Avanti»: doppio clic sul programma di installazione e ClaudePanel si apre subito."]],
+      pt: [["Instalação em um clique", "Chega de páginas “Avançar”: dois cliques no instalador e o ClaudePanel abre na hora."]]
+    }
+  },
+  {
     version: "2.2.4",
     date: "2026-10-22",
     items: {

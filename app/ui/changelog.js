@@ -4,6 +4,18 @@
 // uses its French items as the release notes.
 var CHANGELOG = [
   {
+    version: "2.2.4",
+    date: "2026-10-22",
+    items: {
+      fr: [["Nouvelle signature", "Première version signée avec la nouvelle clé protégée : tes mises à jour viennent bien de ClaudePanel."]],
+      en: [["New signature", "The first version signed with the new protected key: your updates really come from ClaudePanel."]],
+      es: [["Nueva firma", "La primera versión firmada con la nueva clave protegida: tus actualizaciones vienen de verdad de ClaudePanel."]],
+      de: [["Neue Signatur", "Die erste Version, die mit dem neuen geschützten Schlüssel signiert ist: Deine Updates kommen wirklich von ClaudePanel."]],
+      it: [["Nuova firma", "La prima versione firmata con la nuova chiave protetta: i tuoi aggiornamenti vengono davvero da ClaudePanel."]],
+      pt: [["Nova assinatura", "A primeira versão assinada com a nova chave protegida: suas atualizações vêm mesmo do ClaudePanel."]]
+    }
+  },
+  {
     version: "2.2.3",
     date: "2026-10-22",
     items: {

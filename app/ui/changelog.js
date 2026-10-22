@@ -4,6 +4,18 @@
 // uses its French items as the release notes.
 var CHANGELOG = [
   {
+    version: "2.2.6",
+    date: "2026-10-22",
+    items: {
+      fr: [["Un installateur à nos couleurs", "Le fichier d’installation porte maintenant l’icône du robot ClaudePanel."]],
+      en: [["An installer in our colors", "The setup file now shows the ClaudePanel robot icon."]],
+      es: [["Un instalador con nuestros colores", "El archivo de instalación ahora lleva el icono del robot de ClaudePanel."]],
+      de: [["Ein Installer in unseren Farben", "Die Installationsdatei zeigt jetzt das Roboter-Symbol von ClaudePanel."]],
+      it: [["Un programma di installazione con i nostri colori", "Il file di installazione ora mostra l’icona del robot di ClaudePanel."]],
+      pt: [["Um instalador com as nossas cores", "O arquivo de instalação agora traz o ícone do robô do ClaudePanel."]]
+    }
+  },
+  {
     version: "2.2.5",
     date: "2026-10-22",
     items: {

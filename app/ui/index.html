@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>ClaudePanel</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Home -->
+  <div id="home">
+    <div class="clock" id="clock"><b>--:--</b>&nbsp;</div>
+    <div class="weather" id="weather"><b>--°</b>&nbsp;</div>
+
+    <div class="hello">
+      <h1 id="greet">Bonjour</h1>
+      <p id="subtitle">Que veux-tu ouvrir ?</p>
+    </div>
+
+    <div class="cards">
+      <div class="card" id="cardCode" onclick="openCode()">
+        <div class="icon term">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="5 7 10 12 5 17"></polyline><line x1="13" y1="17" x2="19" y2="17"></line>
+          </svg>
+          <div class="badge"></div>
+        </div>
+        <span>Claude Code</span>
+        <small id="cardCodeHint">Terminal</small>
+      </div>
+      <div class="card" id="cardApp" onclick="openApp()">
+        <div class="icon app">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
+            <line x1="12" y1="3" x2="12" y2="21"></line><line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="5.6" y1="5.6" x2="18.4" y2="18.4"></line><line x1="18.4" y1="5.6" x2="5.6" y2="18.4"></line>
+          </svg>
+          <div class="badge"></div>
+        </div>
+        <span>Claude</span>
+        <small id="cardAppHint">Application</small>
+      </div>
+      <div class="card" onclick="openSkills()">
+        <div class="icon skills">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round">
+            <rect x="4" y="4" width="6.5" height="6.5" rx="1.8"></rect><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.8"></rect>
+            <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.8"></rect><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.8"></rect>
+          </svg>
+        </div>
+        <span>Skills</span>
+        <small>Gérer</small>
+      </div>
+    </div>
+
+    <div class="gear" title="Réglages" onclick="openSettings()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Skills -->
+  <div class="view" id="skills">
+    <div class="bar">
+      <div class="back" onclick="closeView()">&#8249;</div>
+      <h2>Skills</h2>
+      <div class="state" id="state"></div>
+    </div>
+    <input class="search" id="q" type="text" placeholder="Rechercher…" oninput="onSearch()">
+    <div class="list" id="list"></div>
+  </div>
+
+  <!-- Settings -->
+  <div class="view" id="settings">
+    <div class="bar">
+      <div class="back" onclick="closeView()">&#8249;</div>
+      <h2>Réglages</h2>
+    </div>
+    <div class="settings">
+      <div class="box">
+        <div class="row">
+          <div class="txt"><b>Ton prénom</b><span>Pour te dire bonjour.</span></div>
+          <input id="setName" type="text" maxlength="24" placeholder="Ton prénom" onkeydown="if (event.key === 'Enter') saveName()">
+          <div class="pill" onclick="saveName()">OK</div>
+        </div>
+      </div>
+      <div class="box" style="margin-top:14px">
+        <div class="row danger" onclick="startGoodbye()">
+          <div class="txt"><b>Désinstaller ClaudePanel</b><span>Claude, Claude Code et tes skills restent installés.</span></div>
+        </div>
+      </div>
+      <p class="version">ClaudePanel 2.0 · aucune donnée collectée<br>Outil indépendant, non affilié à Anthropic.</p>
+    </div>
+  </div>
+
+  <!-- Welcome tour (first launch) -->
+  <div class="flow" id="tour">
+    <div class="dots" id="tourDots"><i></i><i></i><i></i></div>
+
+    <div class="step" id="t0">
+      <div class="col">
+        <div class="trio">
+          <div class="icon term">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="5 7 10 12 5 17"></polyline><line x1="13" y1="17" x2="19" y2="17"></line></svg>
+          </div><div class="icon app">
+            <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
+              <line x1="12" y1="3" x2="12" y2="21"></line><line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="5.6" y1="5.6" x2="18.4" y2="18.4"></line><line x1="18.4" y1="5.6" x2="5.6" y2="18.4"></line></svg>
+          </div><div class="icon skills">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round">
+              <rect x="4" y="4" width="6.5" height="6.5" rx="1.8"></rect><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.8"></rect>
+              <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.8"></rect><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.8"></rect></svg>
+          </div>
+        </div>
+        <h1>Bienvenue dans ClaudePanel</h1>
+        <p class="lead">Un petit écran d’accueil pour ouvrir Claude en un clic.</p>
+        <div class="box">
+          <div class="row"><div class="icon sm term">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="5 7 10 12 5 17"></polyline><line x1="13" y1="17" x2="19" y2="17"></line></svg></div>
+            <div class="txt"><b>Claude Code</b><span>L’assistant qui code avec toi, dans le terminal.</span></div></div>
+          <div class="row"><div class="icon sm app">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round">
+              <line x1="12" y1="3" x2="12" y2="21"></line><line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="5.6" y1="5.6" x2="18.4" y2="18.4"></line><line x1="18.4" y1="5.6" x2="5.6" y2="18.4"></line></svg></div>
+            <div class="txt"><b>Claude</b><span>L’application pour discuter avec Claude.</span></div></div>
+          <div class="row"><div class="icon sm skills">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">
+              <rect x="4" y="4" width="6.5" height="6.5" rx="1.8"></rect><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.8"></rect>
+              <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.8"></rect><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.8"></rect></svg></div>
+            <div class="txt"><b>Skills</b><span>Ajoute de nouvelles compétences à Claude, sans ligne de commande.</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="t1">
+      <div class="col">
+        <div class="mark green">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34c759" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2.8 4.5 5.6v5.6c0 4.6 3.1 8.6 7.5 10 4.4-1.4 7.5-5.4 7.5-10V5.6z"></path><polyline points="8.6 12.2 11 14.6 15.6 9.8"></polyline></svg>
+        </div>
+        <h1>Tes données restent à toi</h1>
+        <p class="lead">ClaudePanel est juste un raccourci. Il ne garde rien.</p>
+        <div class="box">
+          <div class="row"><div class="icon sm soft">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"></circle><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            <div class="txt"><b>Aucune donnée collectée</b><span>Pas de compte, pas de pub, pas de traqueur. Rien n’est envoyé ni stocké.</span></div></div>
+          <div class="row"><div class="icon sm app">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round">
+              <line x1="12" y1="3" x2="12" y2="21"></line><line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="5.6" y1="5.6" x2="18.4" y2="18.4"></line><line x1="18.4" y1="5.6" x2="5.6" y2="18.4"></line></svg></div>
+            <div class="txt"><b>Tout passe par Anthropic</b><span>Claude, Claude Code et ta connexion passent par les serveurs officiels d’Anthropic. Le panel ne voit jamais ton mot de passe.</span></div></div>
+          <div class="row"><div class="icon sm soft">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg></div>
+            <div class="txt"><b>Rien de caché</b><span>Le code du panel est lisible par tous.</span></div></div>
+        </div>
+        <p class="fine">Seule exception : la météo vient de wttr.in, qui devine ta ville grâce à ton adresse IP.<br>
+          ClaudePanel est un outil indépendant, non affilié à Anthropic.</p>
+      </div>
+    </div>
+
+    <div class="step" id="t2">
+      <div class="col">
+        <div class="mark violet" style="margin-top:30px">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5e5ce6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5"></path></svg>
+        </div>
+        <h1>Comment tu t’appelles ?</h1>
+        <p class="lead">Le panel te dira bonjour avec ton prénom.</p>
+        <input class="field" id="tourName" type="text" maxlength="24" placeholder="Ton prénom" onkeydown="if (event.key === 'Enter') tourNext()">
+        <p class="fine">Tu pourras le changer plus tard dans les réglages.</p>
+      </div>
+    </div>
+
+    <div class="nav">
+      <div class="btn ghost off" id="tourBack" onclick="tourBack()">Retour</div>
+      <div class="btn" id="tourGo" onclick="tourNext()">Continuer</div>
+    </div>
+  </div>
+
+  <!-- Goodbye (uninstall) -->
+  <div class="flow" id="bye">
+    <div class="step" id="u0">
+      <div class="col">
+        <div class="stage" id="hiStage"></div>
+        <h1>Désinstaller ClaudePanel ?</h1>
+        <p class="lead">Seul le panel sera retiré de ton ordinateur.</p>
+        <div class="box">
+          <div class="row"><div class="icon sm soft">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d70015" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 20 7"></polyline><path d="M6.5 7l1 12.5h9l1-12.5"></path><path d="M9.5 7V4.5h5V7"></path></svg></div>
+            <div class="txt"><b>Ce qui part</b><span>Le panel, ses raccourcis et ton prénom enregistré.</span></div></div>
+          <div class="row"><div class="icon sm safe">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12.5 10 17.5 19 7.5"></polyline></svg></div>
+            <div class="txt"><b>Ce qui reste</b><span>Claude, Claude Code, ton compte et tes skills ne bougent pas.</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="u1">
+      <div class="col" style="padding-top:40px">
+        <h1>Désinstallation…</h1>
+        <div class="road" id="uroad"><div class="track"><div class="fill" id="ufill"></div></div></div>
+        <p class="doing" id="udoing">Préparation</p>
+        <p class="err" id="uerr"></p>
+      </div>
+    </div>
+
+    <div class="step" id="u2">
+      <div class="col" style="padding-top:30px">
+        <div class="stage" id="byeStage"></div>
+        <h1 id="byeTitle">Au revoir</h1>
+        <p class="lead" id="byeMsg"></p>
+        <p class="fine">ClaudePanel disparaîtra dès que tu fermes cette fenêtre.</p>
+      </div>
+    </div>
+
+    <div class="nav">
+      <div class="btn ghost" id="byeCancel" onclick="cancelGoodbye()">Annuler</div>
+      <div class="btn danger" id="byeGo" onclick="byeNext()">Désinstaller</div>
+    </div>
+  </div>
+
+  <div class="scrim" id="scrim">
+    <div class="sheet">
+      <div class="pad">
+        <div class="mark" id="sheetMark"></div>
+        <h2 id="sheetTitle"></h2>
+        <p id="sheetMsg"></p>
+      </div>
+      <div class="actions">
+        <div class="act cancel" onclick="closeSheet()">Annuler</div>
+        <div class="act go" id="sheetGo" onclick="sheetGo()">Installer quand même</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div id="warp"></div>
+
+  <script src="sprite.js"></script>
+  <script src="app.js"></script>
+  <script src="skills.js"></script>
+  <script src="robot.js"></script>
+</body>
+</html>

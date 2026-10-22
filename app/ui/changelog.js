@@ -2,6 +2,13 @@
 // after an update. release.ps1 refuses to publish a version without an entry.
 var CHANGELOG = [
   {
+    version: "2.0.3",
+    date: "22 octobre 2026",
+    items: [
+      ["Mises à jour signalées tout de suite", "Le bandeau de mise à jour apparaît dès l’ouverture du panel, plus besoin d’attendre."]
+    ]
+  },
+  {
     version: "2.0.2",
     date: "22 octobre 2026",
     items: [

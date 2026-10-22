@@ -444,6 +444,8 @@ Promise.all([call("get_settings"), window.__TAURI__.app.getVersion()]).then(func
     settings.lastVersion = version;
     call("save_settings", { settings: settings });
   }
-  setTimeout(checkUpdate, 4000);
-  setInterval(checkUpdate, 6 * 3600 * 1000);
 });
+
+// Right away, alongside everything else, so the banner shows within a second or two
+checkUpdate();
+setInterval(checkUpdate, 6 * 3600 * 1000);

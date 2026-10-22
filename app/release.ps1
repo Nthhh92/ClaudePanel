@@ -24,9 +24,10 @@ if (-not (Test-Path $key)) { throw "Clé de signature introuvable : $key" }
 
 # This version's news, from ui\changelog.js: they become the release notes
 $changelog = [IO.File]::ReadAllText("$app\ui\changelog.js")
-$block = [regex]::Match($changelog, 'version:\s*"' + [regex]::Escape($Version) + '"[\s\S]*?items:\s*\[([\s\S]*?)\]\s*\}')
+$block = [regex]::Match($changelog, 'version:\s*"' + [regex]::Escape($Version) + '"[\s\S]*?items:\s*\{[\s\S]*?fr:\s*\[([\s\S]*?)\]\]')
 if (-not $block.Success) { throw "Ajoute d'abord les nouveautés de la $Version dans ui\changelog.js" }
-$items = [regex]::Matches($block.Groups[1].Value, '\["((?:[^"\\]|\\.)*)",\s*"((?:[^"\\]|\\.)*)"\]')
+# The capture stops before the last item's closing "]"
+$items = [regex]::Matches($block.Groups[1].Value + "]",'\["((?:[^"\\]|\\.)*)",\s*"((?:[^"\\]|\\.)*)"\]')
 $notes = ($items | ForEach-Object { "- **$($_.Groups[1].Value)** : $($_.Groups[2].Value)" }) -join "`n"
 
 # The version number lives in three files

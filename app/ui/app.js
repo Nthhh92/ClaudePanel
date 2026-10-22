@@ -12,93 +12,49 @@ var settings = { name: "", onboarded: false };
 
 /* ---------- Clock and weather ---------- */
 
+// Time and date the way the system's language writes them
 function updateClock() {
-  var days = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
-  var months = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
-    "août", "septembre", "octobre", "novembre", "décembre"];
-  var d = new Date(), m = d.getMinutes();
-  $("clock").innerHTML = "<b>" + d.getHours() + ":" + (m < 10 ? "0" + m : m) + "</b>" +
-    days[d.getDay()] + " " + d.getDate() + " " + months[d.getMonth()];
+  var d = new Date();
+  $("clock").innerHTML = "<b>" + esc(d.toLocaleTimeString(LANG, { hour: "numeric", minute: "2-digit" })) + "</b>" +
+    esc(d.toLocaleDateString(LANG, { weekday: "long", day: "numeric", month: "long" }));
 }
 updateClock();
 setInterval(updateClock, 1000);
 
-fetch("https://wttr.in/?format=j1&lang=fr")
+fetch("https://wttr.in/?format=j1&lang=" + LANG)
   .then(function (r) { return r.json(); })
   .then(function (d) {
-    var c = d.current_condition[0];
-    var desc = c.lang_fr ? c.lang_fr[0].value : c.weatherDesc[0].value;
+    var c = d.current_condition[0], local = c["lang_" + LANG];
+    var desc = local ? local[0].value : c.weatherDesc[0].value;
     $("weather").innerHTML = "<b>" + esc(c.temp_C) + "°</b>" + esc(desc) + "<br>" + esc(d.nearest_area[0].areaName[0].value);
   })
   .catch(function () {});
 
 /* ---------- Greeting: random, never the same twice in a row ---------- */
 
+// The lines are in i18n.js (GREETINGS), one set per language
 function greet() {
-  var any = [
-    "Salut {n}", "Hey {n}", "Coucou {n}", "Hello {n}", "Yo {n}",
-    "Bienvenue, {n}", "Te revoilà, {n}", "Bon retour, {n}", "Re-salut {n}",
-    "Content de te voir, {n}", "Ravi de te revoir, {n}", "Heureux de te voir, {n}",
-    "Quoi de neuf, {n} ?", "Ça roule, {n} ?", "Tout roule, {n} ?", "En forme, {n} ?",
-    "Alors {n}, on code ?", "On s'y remet, {n} ?", "On construit quoi, {n} ?",
-    "Une idée en tête, {n} ?", "Inspiré, {n} ?", "Prêt à créer, {n} ?",
-    "Prêt à décoller, {n} ?", "Prêt pour la suite, {n} ?", "À toi de jouer, {n}",
-    "Let's go {n}", "C'est parti {n}", "{n} est dans la place", "Le retour de {n}",
-    "Encore toi ? Génial", "Salut le boss", "Salut capitaine {n}", "Mission du jour, {n} ?",
-    "On fait des merveilles ?", "Un projet en vue, {n} ?", "On attaque, {n} ?",
-    "Hop, au travail {n}", "Bienvenue à bord, {n}", "Prêt quand tu l'es, {n}",
-    "Qu'est-ce qu'on invente ?", "{n}, le génie est là", "Toujours au top, {n} ?",
-    "On casse tout, {n} ?", "Aujourd'hui, on brille", "Salut l'inventeur"
-  ];
-  var byTime = [
-    { from: 5, to: 11, list: ["Bonjour {n}", "Bien dormi, {n} ?", "Café d'abord, {n} ?",
-      "Belle matinée, {n}", "Debout {n}, on code", "Un matin productif ?", "Bon matin, {n}"] },
-    { from: 11, to: 14, list: ["Bon appétit, {n}", "Pause déj, {n} ?", "Midi pile, {n}"] },
-    { from: 14, to: 18, list: ["Bon après-midi, {n}", "Bien mangé, {n} ?", "La sieste attendra",
-      "Un petit café, {n} ?", "L'après-midi est à toi"] }
-  ];
-  // From 18h the evening list replaces everything above
-  var evening = [
-    "Bonsoir {n}", "Bonne soirée, {n}", "Belle soirée, {n}", "Bonsoir chef",
-    "Re-bonsoir {n}", "Bonsoir l'artiste", "Hello, bonsoir {n}", "Coucou, c'est le soir",
-    "Session du soir, {n} ?", "Un peu de code ce soir ?", "On code au calme ?",
-    "Le soir, c'est plus calme", "Ambiance du soir, {n}", "Projet du soir, {n} ?",
-    "Encore un peu, {n} ?", "Dernière ligne droite ?", "Une petite dernière ?",
-    "La journée n'est pas finie", "Prêt pour la soirée ?", "Soirée productive, {n} ?",
-    "Bien rentré, {n} ?", "Journée bien remplie ?", "Alors, cette journée ?",
-    "Le soleil se couche, on code", "Les idées du soir…", "Le calme après la journée",
-    "Tisane et code, {n} ?", "Un dîner, puis on code ?", "Bon appétit ce soir, {n}",
-    "Détente ou projet, {n} ?", "On finit en beauté ?", "On boucle la journée ?",
-    "Mission du soir, {n} ?", "Soirée code, {n} ?", "Les étoiles sont sorties",
-    "La lune est levée, {n}", "Petit projet du soir ?", "Heureux de te voir ce soir"
-  ];
-  var night = [
-    "Encore debout, {n} ?", "Nuit blanche, {n} ?", "Les génies codent la nuit",
-    "Chut… tout le monde dort", "Session de nuit, {n} ?", "Pense à dormir, {n}",
-    "Il se fait tard, {n}", "Minuit passé, {n}…", "Hibou de nuit, {n} ?",
-    "Un dernier commit ?", "Pas encore au lit ?", "La nuit porte conseil",
-    "Bonsoir {n}", "Re-bonsoir {n}", "Les étoiles sont sorties", "La lune est levée, {n}",
-    "On code au calme ?", "Tout est calme, {n}", "Insomnie créative ?", "Le monde dort, toi tu codes"
-  ];
-  var subtitles = ["Que veux-tu ouvrir ?", "Par où on commence ?", "On lance quoi ?",
-    "Choisis ton outil", "Qu'est-ce qu'on ouvre ?", "Un clic et c'est parti", "Où va-t-on ?"];
+  var g = GREETINGS[LANG] || GREETINGS.en;
+  var byTime = [{ from: 5, to: 11, list: g.morning }, { from: 11, to: 14, list: g.noon }, { from: 14, to: 18, list: g.afternoon }];
 
   var now = new Date(), h = now.getHours(), day = now.getDay(), pool;
   if (h >= 23 || h < 5) {
-    pool = night.slice();
+    pool = g.night.slice();
   } else if (h >= 18) {
-    pool = evening.slice();
-    if (day === 5) pool.push("Bon vendredi soir, {n}");
-    if (day === 6) pool.push("Bon samedi soir, {n}");
+    // From 18h the evening lines replace everything else
+    pool = g.evening.slice();
+    if (day === 5) pool = pool.concat(g.fridayEvening);
+    if (day === 6) pool = pool.concat(g.saturdayEvening);
   } else {
-    pool = any.slice();
+    pool = g.any.slice();
     for (var i = 0; i < byTime.length; i++)
       if (h >= byTime[i].from && h < byTime[i].to)
         for (var k = 0; k < 3; k++) pool = pool.concat(byTime[i].list); // time of day weighs more
-    if (day === 0 || day === 6) pool = pool.concat(["Bon week-end, {n}", "Même le week-end ?", "Projet du week-end ?"]);
-    if (day === 1) pool.push("Bon lundi, {n}");
-    if (day === 5) pool.push("Vendredi, enfin !");
+    if (day === 0 || day === 6) pool = pool.concat(g.weekend);
+    if (day === 1) pool = pool.concat(g.monday);
+    if (day === 5) pool = pool.concat(g.friday);
   }
+  var subtitles = g.subtitles;
 
   // Without a first name, only the nameless lines
   var name = settings.name, named = [];
@@ -129,28 +85,32 @@ function setCard(id, need, hint) {
 
 function refreshCards() {
   return call("detect").then(function (now) {
-    if (env && now.code && !env.code) { codeInstalling = false; toast("Claude Code est installé ✓"); }
-    if (env && now.app && !env.app) { appWaiting = false; toast("Claude est installé ✓"); }
+    if (env && now.code && !env.code) { codeInstalling = false; toast(t("toast.codeInstalled")); }
+    if (env && now.app && !env.app) { appWaiting = false; toast(t("toast.appInstalled")); }
     env = now;
-    setCard("cardCode", !env.code || !env.code_in,
-      env.code ? (env.code_in ? "Terminal" : "Non connecté · clique ici")
-        : codeInstalling ? "Installation en cours…" : "Pas installé · clique ici");
-    setCard("cardApp", !env.app || !env.app_in,
-      env.app ? (env.app_in ? "Application" : "Non connecté · clique ici")
-        : appWaiting ? "En attente d’installation…" : "Pas installé · clique ici");
+    setCard("cardCode", !env.code || !env.code_in, t(
+      env.code ? (env.code_in ? "card.terminal" : "card.notSignedIn")
+        : codeInstalling ? "card.installing" : "card.notInstalled"));
+    setCard("cardApp", !env.app || !env.app_in, t(
+      env.app ? (env.app_in ? "card.application" : "card.notSignedIn")
+        : appWaiting ? "card.waiting" : "card.notInstalled"));
   });
 }
 refreshCards();
 setInterval(refreshCards, 3000);
 
-function failed(e) { toast("Oups : " + e); }
+function failed(e) { toast(t("toast.oops", { e: errText(e) })); }
 
 function openCode() {
   if (!env) return;
   if (!env.code) {
-    // Anthropic's official installer, in a visible window
+    // Anthropic's official installer, in a visible window that speaks the user's language
     codeInstalling = true;
-    call("install_code").then(refreshCards, failed);
+    // {url} is filled in by the backend, which knows the platform's script
+    call("install_code", { texts: {
+      title: t("install.title"), source: t("install.source"), ok: t("install.ok"),
+      fail: t("install.fail", { e: "$_" }), check: t("install.check"), close: t("install.close")
+    } }).then(refreshCards, failed);
     return;
   }
   // Signed out: Claude Code itself asks to log in on start
@@ -201,7 +161,7 @@ function saveName() {
   settings.name = $("setName").value.trim();
   call("save_settings", { settings: settings }).then(function () {
     greet();
-    toast("C’est noté ✓");
+    toast(t("toast.saved"));
   }, failed);
 }
 
@@ -215,7 +175,7 @@ function tourShow(n) {
   var dots = $("tourDots").getElementsByTagName("i");
   for (var j = 0; j < dots.length; j++) dots[j].className = j === n ? "on" : "";
   $("tourBack").className = "btn ghost" + (n > 0 ? "" : " off");
-  $("tourGo").innerHTML = ["Continuer", "J’ai compris", "C’est parti"][n];
+  $("tourGo").textContent = t(["btn.continue", "tour.gotIt", "tour.go"][n]);
   if (n === 2) {
     // Kept from ClaudePanel 1.x, if it was installed
     if (!$("tourName").value) $("tourName").value = settings.name;
@@ -246,7 +206,7 @@ function byeShow(n) {
   for (var i = 0; i < 3; i++) $("u" + i).className = "step" + (i === n ? " on" : "");
   $("byeCancel").className = "btn ghost" + (n === 0 ? "" : " off");
   $("byeGo").className = "btn" + (n === 0 ? " danger" : n === 1 ? " off" : "");
-  $("byeGo").innerHTML = n === 0 ? "Désinstaller" : "Fermer";
+  $("byeGo").textContent = t(n === 0 ? "btn.uninstall" : "btn.close");
 }
 
 function startGoodbye() {
@@ -279,7 +239,7 @@ function byeNext() {
 
 function uninstallApp() {
   var bot = walker("uroad");
-  var labels = ["Préparation", "Suppression de tes réglages", "Retrait de l’application", "Terminé"];
+  var labels = [t("bye.step1"), t("bye.step2"), t("bye.step3"), t("bye.step4")];
   var i = 0;
   $("uerr").innerHTML = "";
   (function step() {
@@ -294,7 +254,7 @@ function uninstallApp() {
         else { bot.stop(); bot.hop(18, function () { setTimeout(goodbye, 250); }); }
       }, function (e) {
         bot.stop(); bot.arms("droop"); bot.mood = "sad"; bot.eyes("sad");
-        $("uerr").innerHTML = esc(e);
+        $("uerr").innerHTML = esc(errText(e));
         $("byeCancel").className = "btn ghost";
       });
     }, 420);
@@ -304,15 +264,10 @@ function uninstallApp() {
 // A sad little robot, with a tear now and then
 function goodbye() {
   byeShow(2);
-  var n = settings.name ? ", " + settings.name : "";
-  var lines = [
-    ["Au revoir" + n + "…", "Tu vas me manquer. Reviens quand tu veux."],
-    ["Snif… déjà ?", "Merci d’avoir utilisé ClaudePanel" + n + ". À bientôt, j’espère."],
-    ["C’était sympa" + n + "…", "Je range mes petites jambes. Prends soin de toi."]
-  ];
-  var l = lines[Math.floor(Math.random() * lines.length)];
-  $("byeTitle").innerHTML = esc(l[0]);
-  $("byeMsg").innerHTML = esc(l[1]);
+  var v = { n: settings.name ? ", " + settings.name : "" };
+  var l = Math.floor(Math.random() * 3) + 1;
+  $("byeTitle").textContent = t("bye.line" + l + "a", v);
+  $("byeMsg").textContent = t("bye.line" + l + "b", v);
 
   var b = stageBot("byeStage");
   b.scale(0);
@@ -354,14 +309,14 @@ function shortVersion(v) { return String(v).replace(/\.0$/, ""); }
 function checkUpdate(manual) {
   return call("check_update").then(function (u) {
     if (u) {
-      $("updText").innerHTML = "ClaudePanel " + esc(shortVersion(u.version)) + " est disponible";
+      $("updText").textContent = t("upd.available", { v: shortVersion(u.version) });
       $("updBanner").className = "update on";
       if (manual) closeView();
     } else if (manual) {
-      toast("Tu as déjà la dernière version ✓");
+      toast(t("upd.latest"));
     }
   }, function (e) {
-    if (manual) toast("Impossible de vérifier pour l’instant");
+    if (manual) toast(t("upd.cantCheck"));
   });
 }
 
@@ -371,17 +326,17 @@ function startUpdate() {
   $("updErr").innerHTML = "";
   $("updClose").className = "btn ghost off";
   $("updFill").style.width = "0";
-  $("updDoing").innerHTML = "Téléchargement…";
+  $("updDoing").textContent = t("upd.downloading");
   var bot = walker("updRoad");
   var stopListening = window.__TAURI__.event.listen("update-progress", function (e) {
     $("updFill").style.width = Math.round(e.payload * 100) + "%";
     bot.to(e.payload);
-    if (e.payload >= 1) $("updDoing").innerHTML = "Installation… ClaudePanel va redémarrer";
+    if (e.payload >= 1) $("updDoing").textContent = t("upd.installing");
   });
   call("install_update").catch(function (e) {
     stopListening.then(function (stop) { stop(); });
     bot.stop(); bot.arms("droop"); bot.mood = "sad"; bot.eyes("sad");
-    $("updErr").innerHTML = "La mise à jour n’a pas pu se faire : " + esc(e);
+    $("updErr").textContent = t("upd.failed", { e: errText(e) });
     $("updClose").className = "btn ghost";
   });
 }
@@ -399,15 +354,16 @@ function showNews(since) {
     var c = CHANGELOG[i];
     if (compareVersions(c.version, since) <= 0 || compareVersions(c.version, version) > 0) continue;
     if (!date) date = c.date;
-    for (var j = 0; j < c.items.length; j++)
+    var items = c.items[LANG] || c.items.en;
+    for (var j = 0; j < items.length; j++)
       rows += '<div class="row"><div class="icon sm new">' +
         '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e5ce6" stroke-width="2.2" stroke-linejoin="round">' +
         '<path d="M12 3c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7z"></path></svg></div>' +
-        '<div class="txt"><b>' + esc(c.items[j][0]) + '</b><span>' + esc(c.items[j][1]) + '</span></div></div>';
+        '<div class="txt"><b>' + esc(items[j][0]) + '</b><span>' + esc(items[j][1]) + '</span></div></div>';
   }
   if (!rows) return;
-  $("newsTitle").innerHTML = "Quoi de neuf dans la " + esc(shortVersion(version)) + " ?";
-  $("newsDate").innerHTML = date ? "Mise à jour du " + esc(date) : "";
+  $("newsTitle").textContent = t("news.title", { v: shortVersion(version) });
+  $("newsDate").textContent = date ? t("news.date", { d: fmtDate(date) }) : "";
   $("newsList").innerHTML = rows;
   $("newsStage").innerHTML = "";
   $("news").style.display = "block";

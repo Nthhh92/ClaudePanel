@@ -1,17 +1,18 @@
 # Opened by ClaudePanel when Claude Code is missing: runs Anthropic's official installer.
-$Host.UI.RawUI.WindowTitle = "Installation de Claude Code"
+# The {PLACEHOLDERS} are filled in by launch.rs with texts in the user's language.
+$Host.UI.RawUI.WindowTitle = "{TITLE}"
 Write-Host ""
-Write-Host "  Installation de Claude Code" -ForegroundColor Cyan
-Write-Host "  Script officiel d'Anthropic : https://claude.ai/install.ps1" -ForegroundColor DarkGray
+Write-Host "  {TITLE}" -ForegroundColor Cyan
+Write-Host "  {SOURCE}" -ForegroundColor DarkGray
 Write-Host ""
 try {
   Invoke-RestMethod https://claude.ai/install.ps1 | Invoke-Expression
   Write-Host ""
-  Write-Host "  C'est fait ! Retourne sur ClaudePanel et clique sur Claude Code pour te connecter." -ForegroundColor Green
+  Write-Host "  {OK}" -ForegroundColor Green
 } catch {
   Write-Host ""
-  Write-Host "  L'installation a échoué : $_" -ForegroundColor Red
-  Write-Host "  Vérifie ta connexion Internet puis réessaie depuis ClaudePanel." -ForegroundColor Red
+  Write-Host "  {FAIL}" -ForegroundColor Red
+  Write-Host "  {CHECK}" -ForegroundColor Red
 }
 Write-Host ""
-Read-Host "  Appuie sur Entrée pour fermer"
+Read-Host "  {CLOSE}"

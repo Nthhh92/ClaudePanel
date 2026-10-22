@@ -25,7 +25,7 @@ fn in_terminal(script: &str) -> Result<(), String> {
 pub fn open_code(path: String) -> Result<(), String> {
     #[cfg(windows)]
     {
-        let dir = Path::new(&path).parent().ok_or("chemin invalide")?;
+        let dir = Path::new(&path).parent().ok_or("err.badName")?;
         let mut paths = vec![dir.to_path_buf()];
         paths.extend(std::env::split_paths(&std::env::var_os("PATH").unwrap_or_default()));
         let joined = std::env::join_paths(paths).map_err(|e| e.to_string())?;
@@ -40,25 +40,54 @@ pub fn open_code(path: String) -> Result<(), String> {
     in_terminal(&format!("cd ~ && '{}'", path.replace('\'', "'\\''")))
 }
 
+/// What the installer window says, in the user's language (from i18n.js).
+/// `source` holds {url}; `fail` may hold PowerShell's $_ (the error).
+#[derive(serde::Deserialize)]
+pub struct InstallTexts {
+    title: String,
+    source: String,
+    ok: String,
+    fail: String,
+    check: String,
+    close: String,
+}
+
 #[tauri::command]
-pub fn install_code() -> Result<(), String> {
+pub fn install_code(texts: InstallTexts) -> Result<(), String> {
     #[cfg(windows)]
     {
-        // PowerShell 5 needs the BOM to read the accents
+        // Inside PowerShell double quotes: escape backticks and quotes, keep $_
+        let ps = |s: &str| s.replace('`', "``").replace('"', "`\"");
+        let source = texts.source.replace("{url}", "https://claude.ai/install.ps1");
+        let body = include_str!("../scripts/install-code.ps1")
+            .replace("{TITLE}", &ps(&texts.title))
+            .replace("{SOURCE}", &ps(&source))
+            .replace("{OK}", &ps(&texts.ok))
+            .replace("{FAIL}", &ps(&texts.fail))
+            .replace("{CHECK}", &ps(&texts.check))
+            .replace("{CLOSE}", &ps(&texts.close));
+        // PowerShell 5 needs the BOM to read accents
         let script = std::env::temp_dir().join("claudepanel-install-code.ps1");
         let mut bytes = vec![0xEF, 0xBB, 0xBF];
-        bytes.extend_from_slice(include_str!("../scripts/install-code.ps1").as_bytes());
+        bytes.extend_from_slice(body.as_bytes());
         std::fs::write(&script, bytes).map_err(|e| e.to_string())?;
-        spawn(hidden(&mut Command::new("cmd")).arg("/c").arg("start").arg("Installation de Claude Code").args([
+        spawn(hidden(&mut Command::new("cmd")).arg("/c").arg("start").arg(&texts.title).args([
             "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
         ]).arg(&script))
     }
     #[cfg(not(windows))]
-    in_terminal(
-        "clear; echo; echo '  Installation de Claude Code (script officiel d’Anthropic)'; echo; \
-         curl -fsSL https://claude.ai/install.sh | bash && \
-         echo && echo '  C’est fait ! Retourne sur ClaudePanel et clique sur Claude Code pour te connecter.'",
-    )
+    {
+        // Inside sh single quotes
+        let sh = |s: &str| format!("'{}'", s.replace('\'', "'\\''"));
+        let source = texts.source.replace("{url}", "https://claude.ai/install.sh");
+        let _ = (&texts.fail, &texts.check, &texts.close);
+        in_terminal(&format!(
+            "clear; echo; echo {}; echo {}; echo; curl -fsSL https://claude.ai/install.sh | bash && echo && echo {}",
+            sh(&format!("  {}", texts.title)),
+            sh(&format!("  {source}")),
+            sh(&format!("  {}", texts.ok)),
+        ))
+    }
 }
 
 #[tauri::command]
@@ -79,7 +108,7 @@ pub fn open_app(app: String) -> Result<(), String> {
 #[tauri::command]
 pub fn open_url(url: String) -> Result<(), String> {
     if !url.starts_with("https://") {
-        return Err("adresse refusée".into());
+        return Err("err.badName".into());
     }
     #[cfg(windows)]
     return spawn(Command::new("explorer.exe").arg(url));

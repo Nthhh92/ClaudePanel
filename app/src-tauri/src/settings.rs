@@ -77,7 +77,7 @@ pub fn uninstall_self(app: AppHandle) -> Result<(), String> {
         // Tauri's NSIS installer puts its uninstaller next to the exe
         let uninstaller = exe.with_file_name("uninstall.exe");
         if !uninstaller.is_file() {
-            return Err("Désinstallation introuvable : ClaudePanel n’a pas été installé avec son installateur.".into());
+            return Err("err.noUninstaller".into());
         }
         let quote = |p: &PathBuf| format!("'{}'", p.display().to_string().replace('\'', "''"));
         let wipe: Vec<String> = data.iter().map(|d| format!("Remove-Item -Recurse -Force -ErrorAction SilentlyContinue {}", quote(d))).collect();
@@ -94,7 +94,7 @@ pub fn uninstall_self(app: AppHandle) -> Result<(), String> {
     #[cfg(not(windows))]
     {
         // .../ClaudePanel.app/Contents/MacOS/claudepanel
-        let bundle = exe.ancestors().nth(3).ok_or("app introuvable")?.to_path_buf();
+        let bundle = exe.ancestors().nth(3).ok_or("err.noUninstaller")?.to_path_buf();
         let q = |p: &PathBuf| format!("'{}'", p.display().to_string().replace('\'', "'\\''"));
         let wipe: Vec<String> = data.iter().map(|d| format!("rm -rf {}", q(d))).collect();
         let script = format!(

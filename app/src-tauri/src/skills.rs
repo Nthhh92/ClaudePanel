@@ -51,20 +51,20 @@ pub async fn skills_list() -> Result<Lists, String> {
 #[tauri::command]
 pub async fn skills_action(action: String, arg: String) -> Result<String, String> {
     if arg.is_empty() || !arg.chars().all(|c| c.is_ascii_alphanumeric() || "@._/:-".contains(c)) {
-        return Err("nom invalide".into());
+        return Err("err.badName".into());
     }
     tauri::async_runtime::spawn_blocking(move || match action.as_str() {
         "install" => run_claude(&["plugin", "install", &arg]),
         "uninstall" => run_claude(&["plugin", "uninstall", &arg]),
         "add" => run_claude(&["plugin", "marketplace", "add", &arg]),
-        _ => Err("action inconnue".into()),
+        _ => Err("err.badName".into()),
     })
     .await
     .map_err(|e| e.to_string())?
 }
 
 fn run_claude(args: &[&str]) -> Result<String, String> {
-    let mut cmd = claude_command().ok_or("Claude Code n’est pas installé")?;
+    let mut cmd = claude_command().ok_or("err.noCode")?;
     let out = cmd.args(args).output().map_err(|e| e.to_string())?;
     let text = String::from_utf8_lossy(&out.stdout).into_owned();
     if out.status.success() {

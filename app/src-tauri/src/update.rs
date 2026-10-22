@@ -34,7 +34,7 @@ pub async fn check_update(app: AppHandle, pending: State<'_, Pending>) -> Result
 /// Downloads (reporting "update-progress" from 0 to 1), installs, restarts.
 #[tauri::command]
 pub async fn install_update(app: AppHandle, pending: State<'_, Pending>) -> Result<(), String> {
-    let update = pending.0.lock().unwrap().take().ok_or("Aucune mise à jour en attente")?;
+    let update = pending.0.lock().unwrap().take().ok_or("err.noUpdate")?;
     let progress = app.clone();
     let mut received = 0usize;
     update

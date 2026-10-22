@@ -5,11 +5,16 @@
 
 mod detect;
 mod launch;
+mod migrate;
 mod settings;
 mod skills;
 
 fn main() {
     tauri::Builder::default()
+        .setup(|app| {
+            migrate::run(app.handle());
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             detect::detect,
             launch::open_code,

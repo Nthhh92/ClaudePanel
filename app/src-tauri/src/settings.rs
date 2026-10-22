@@ -34,6 +34,17 @@ pub fn save_settings(app: AppHandle, settings: Settings) -> Result<(), String> {
     std::fs::write(f, serde_json::to_string(&settings).unwrap()).map_err(|e| e.to_string())
 }
 
+/// Takes the first name saved by ClaudePanel 1.x, unless this version already has settings.
+pub fn adopt_name(app: &AppHandle, user_json: &std::path::Path) {
+    if file(app).map_or(true, |f| f.exists()) {
+        return;
+    }
+    let name = crate::detect::read_json(user_json)
+        .and_then(|j| j["name"].as_str().map(str::to_string))
+        .unwrap_or_default();
+    let _ = save_settings(app.clone(), Settings { name, onboarded: false });
+}
+
 #[tauri::command]
 pub fn platform() -> &'static str {
     std::env::consts::OS

@@ -216,7 +216,11 @@ function tourShow(n) {
   for (var j = 0; j < dots.length; j++) dots[j].className = j === n ? "on" : "";
   $("tourBack").className = "btn ghost" + (n > 0 ? "" : " off");
   $("tourGo").innerHTML = ["Continuer", "J’ai compris", "C’est parti"][n];
-  if (n === 2) setTimeout(function () { $("tourName").focus(); }, 50);
+  if (n === 2) {
+    // Kept from ClaudePanel 1.x, if it was installed
+    if (!$("tourName").value) $("tourName").value = settings.name;
+    setTimeout(function () { $("tourName").focus(); }, 50);
+  }
 }
 
 function tourBack() { if (tourStep > 0) tourShow(tourStep - 1); }

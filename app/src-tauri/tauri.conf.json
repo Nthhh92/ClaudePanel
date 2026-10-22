@@ -39,7 +39,8 @@
       "nsis": {
         "installMode": "currentUser",
         "languages": ["French"],
-        "displayLanguageSelector": false
+        "displayLanguageSelector": false,
+        "installerHooks": "./windows/hooks.nsh"
       }
     },
     "macOS": {

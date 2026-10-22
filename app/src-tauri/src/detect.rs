@@ -50,6 +50,22 @@ pub fn code_path() -> Option<PathBuf> {
         .find(|p| p.is_file())
 }
 
+/// A command that runs Claude Code. An npm install only has claude.cmd, whose
+/// arguments cmd.exe would mangle: run its script with node directly instead.
+pub fn claude_command() -> Option<Command> {
+    let exe = code_path()?;
+    if exe.extension().map_or(false, |e| e == "cmd") {
+        let script = exe.with_file_name(r"node_modules\@anthropic-ai\claude-code\cli.js");
+        let mut cmd = Command::new("node");
+        cmd.arg(script);
+        hidden(&mut cmd);
+        return Some(cmd);
+    }
+    let mut cmd = Command::new(exe);
+    hidden(&mut cmd);
+    Some(cmd)
+}
+
 fn search_dirs() -> Vec<PathBuf> {
     let home = home();
     let mut dirs = vec![home.join(".local").join("bin")];

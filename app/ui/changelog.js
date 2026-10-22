@@ -2,6 +2,15 @@
 // after an update. release.ps1 refuses to publish a version without an entry.
 var CHANGELOG = [
   {
+    version: "2.1.0",
+    date: "22 octobre 2026",
+    items: [
+      ["Recherche IA des skills", "Décris ce que tu veux faire, l’IA trouve les meilleurs skills parmi des milliers et t’explique pourquoi."],
+      ["Ce que tu as déjà", "Les skills déjà installés qui répondent à ta demande sont signalés."],
+      ["Une barre de recherche toute neuve", "Plus grande, animée, avec des idées de recherche pour démarrer."]
+    ]
+  },
+  {
     version: "2.0.3",
     date: "22 octobre 2026",
     items: [

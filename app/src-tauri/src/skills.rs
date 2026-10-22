@@ -1,11 +1,10 @@
 // Lists installed skills and the plugins available to install, and installs or
 // removes them through the `claude plugin` command line.
-use crate::detect::{code_path, hidden, home, read_json};
+use crate::detect::{claude_command, home, read_json};
 use serde::Serialize;
 use serde_json::Value;
 use std::fs;
 use std::path::Path;
-use std::process::Command;
 
 #[derive(Serialize)]
 struct Skill {
@@ -65,15 +64,8 @@ pub async fn skills_action(action: String, arg: String) -> Result<String, String
 }
 
 fn run_claude(args: &[&str]) -> Result<String, String> {
-    let exe = code_path().ok_or("Claude Code n’est pas installé")?;
-    let mut cmd = if exe.extension().map_or(false, |e| e == "cmd") {
-        let mut c = Command::new("cmd");
-        c.arg("/c").arg(&exe);
-        c
-    } else {
-        Command::new(&exe)
-    };
-    let out = hidden(&mut cmd).args(args).output().map_err(|e| e.to_string())?;
+    let mut cmd = claude_command().ok_or("Claude Code n’est pas installé")?;
+    let out = cmd.args(args).output().map_err(|e| e.to_string())?;
     let text = String::from_utf8_lossy(&out.stdout).into_owned();
     if out.status.success() {
         Ok(text)

@@ -51,6 +51,16 @@ function setLists(l) {
   catalog = l.catalog || {};
   installedIds = {};
   for (var i = 0; i < installed.length; i++) installedIds[installed[i].id] = true;
+  // The CLI leaves installed plugins out of "available": put them back from the
+  // catalog so the AI search can say "you already have this one"
+  var listed = {};
+  for (var a = 0; a < available.length; a++) listed[available[a].pluginId] = true;
+  for (var id in installedIds) {
+    var c = catalog[id], entry = c && c.marketplace_entry;
+    if (listed[id] || !entry) continue;
+    available.push({ pluginId: id, name: entry.name || c.plugin, description: entry.description || "",
+      marketplaceName: id.split("@")[1] || "", installCount: c.unique_installs || 0 });
+  }
   available.sort(function (a, b) { return (b.installCount || 0) - (a.installCount || 0); });
 }
 
@@ -64,8 +74,10 @@ function skillsOf(p) {
   return out;
 }
 
+var listsReady = null;
 function reload() {
-  return call("skills_list").then(function (l) { setLists(l); render(); });
+  listsReady = call("skills_list").then(function (l) { setLists(l); render(); });
+  return listsReady;
 }
 
 // Runs a `claude plugin` action, then reloads the lists.
@@ -137,30 +149,158 @@ function installedItem(g, q) {
     '<div class="body">' + body + '</div></div>';
 }
 
-function availableItem(p) {
+// why: the AI's reason, shown instead of the description
+function availableItem(p, why) {
   var key = "a:" + p.pluginId, names = skillsOf(p), chips = "";
   for (var i = 0; i < names.length; i++) chips += '<span>' + esc(names[i]) + '</span>';
   var verified = isVerified(p.marketplaceName);
   var click = verified
     ? "install('" + esc(p.pluginId) + "')"
     : "askInstall('" + esc(p.pluginId) + "', '" + esc(p.name) + "')";
-  var btn = pending === p.pluginId ? '<div class="pill busy">…</div>'
+  var btn = installedIds[p.pluginId] ? '<div class="tag-installed">Installé</div>'
+    : pending === p.pluginId ? '<div class="pill busy">…</div>'
     : '<div class="pill' + (verified ? '' : ' caution') + '" onclick="stop(event); ' + click + '">Installer</div>';
   var note = verified ? "" :
     '<div class="note">' + warnSvg(14) +
     '<div>Skill non vérifié — publié hors des marketplaces Anthropic. Son code s’exécute sur ta machine à tes risques.</div></div>';
   return '<div class="item' + (opened[key] ? " open" : "") + '">' +
     '<div class="head" onclick="toggle(\'' + esc(key) + '\')"><div class="chev">&#8250;</div>' +
-    '<div class="txt"><div class="name">' + esc(p.name) + (verified ? '' : warnSvg(15)) +
-    '</div><div class="desc">' + esc(p.description) + '</div></div>' +
+    '<div class="txt"><div class="name">' + esc(p.name) + (verified ? '' : warnSvg(15)) + '</div>' +
+    (why ? '<div class="why">' + esc(why) + '</div>' : '<div class="desc">' + esc(p.description) + '</div>') + '</div>' +
     btn + '</div>' +
     '<div class="body">' + note + '<div class="about">' + esc(p.description) + '</div>' +
     (chips ? '<div class="chips">' + chips + '</div>' : '') + '</div></div>';
 }
 
+/* ---------- AI search ---------- */
+
+// The AI result belongs to the text it was asked about; typing something else
+// goes back to the instant local filter.
+var ai = { query: "", state: "idle", shortlist: null, picks: null, run: 0 };
+
+var TRIES = ["Créer des pages web", "Faire des présentations", "Analyser des données",
+  "Écrire de la documentation", "Tester mon code", "Travailler avec Figma"];
+
+function setAiStatus(text, kind) {
+  var el = $("aiStatus");
+  el.className = "ai-status" + (kind ? " " + kind : "");
+  el.innerHTML = esc(text);
+}
+
+function aiActive() { return ai.state !== "idle" && ai.query === $("q").value.trim(); }
+
+function tryQuery(t) { $("q").value = t; aiSearch(); }
+
+// Local first pass over the whole catalog, from the AI's English keywords
+function shortlist(keywords) {
+  var phrases = [], words = [];
+  for (var i = 0; i < keywords.length; i++) {
+    var k = String(keywords[i]).toLowerCase().replace(/[-_]/g, " ");
+    phrases.push(k);
+    var parts = k.split(/[^a-z0-9.+#]+/);
+    for (var j = 0; j < parts.length; j++) if (parts[j].length > 2) words.push(parts[j]);
+  }
+  var scored = [], seen = {};
+  for (var n = 0; n < available.length; n++) {
+    var p = available[n];
+    if (seen[p.name]) continue;
+    seen[p.name] = true;
+    // "frontend-design" must match the keyword "frontend design"
+    var name = String(p.name).toLowerCase().replace(/[-_]/g, " ");
+    var text = name + " " + (String(p.description || "") + " " + skillsOf(p).join(" ")).toLowerCase().replace(/[-_]/g, " ");
+    var score = 0;
+    for (var a = 0; a < phrases.length; a++) score += name.indexOf(phrases[a]) >= 0 ? 5 : text.indexOf(phrases[a]) >= 0 ? 3 : 0;
+    for (var b = 0; b < words.length; b++) score += name.indexOf(words[b]) >= 0 ? 2 : text.indexOf(words[b]) >= 0 ? 1 : 0;
+    if (!score) continue;
+    score += Math.log(1 + (p.installCount || 0)) * 0.4 + (isVerified(p.marketplaceName) ? 3 : 0);
+    scored.push({ p: p, score: score });
+  }
+  scored.sort(function (x, y) { return y.score - x.score; });
+  return scored.slice(0, 60).map(function (s) { return s.p; });
+}
+
+function aiSearch() {
+  var q = $("q").value.trim();
+  if (q.length < 3) { setAiStatus("Décris un peu plus ce que tu veux faire.", "warn"); return; }
+  if (ai.state === "busy" && ai.query === q) return;
+  var run = ++ai.run;
+  ai = { query: q, state: "busy", shortlist: null, picks: null, run: run };
+  var bar = $("aiSearch");
+  bar.className = "ai-search thinking";
+  setAiStatus("Je comprends ta demande…", "busy");
+  render();
+
+  function current() { return ai.run === run; }
+  (listsReady || reload())
+    .then(function () { return call("ai_understand", { query: q }); })
+    .then(function (u) {
+      if (!current()) return;
+      if (!u.on_topic) throw { offTopic: true };
+      ai.shortlist = shortlist(u.keywords);
+      if (!ai.shortlist.length) throw { empty: true };
+      setAiStatus("Je compare " + available.length.toLocaleString("fr-FR") + " plugins et je garde les meilleurs…", "busy");
+      render();
+      var candidates = ai.shortlist.map(function (p) {
+        return { id: p.pluginId, name: p.name, description: p.description || "", skills: skillsOf(p),
+          official: isVerified(p.marketplaceName) };
+      });
+      return call("ai_pick", { query: q, candidates: candidates }).then(function (picks) {
+        if (!current()) return;
+        ai.picks = picks;
+        ai.state = "done";
+        setAiStatus(picks.length ? picks.length + (picks.length > 1 ? " skills trouvés" : " skill trouvé") + " pour ta demande"
+          : "Rien ne correspond vraiment. Essaie de décrire ta demande autrement.", picks.length ? "" : "warn");
+        render();
+      });
+    })
+    .catch(function (e) {
+      if (!current()) return;
+      ai.state = "done";
+      ai.picks = [];
+      if (e && e.offTopic) setAiStatus("Je cherche uniquement des skills pour Claude Code. Essaie par exemple « créer des pages web ».", "warn");
+      else if (e && e.empty) setAiStatus("Aucun skill ne correspond à ta demande pour l’instant.", "warn");
+      else setAiStatus(String(e), "warn");
+      render();
+    })
+    .then(function () { if (current()) bar.className = "ai-search"; });
+}
+
+function renderAi() {
+  var html = "", byId = {};
+  for (var i = 0; i < available.length; i++) byId[available[i].pluginId] = available[i];
+  if (ai.picks) {
+    for (var j = 0; j < ai.picks.length; j++) {
+      var p = byId[ai.picks[j].id];
+      if (p) html += availableItem(p, ai.picks[j].why);
+    }
+    if (html) html = '<div class="section">Suggestions de l’IA</div><div class="box">' + html + '</div>';
+  } else if (ai.shortlist) {
+    // First leads while the AI chooses
+    for (var k = 0; k < Math.min(5, ai.shortlist.length); k++) html += availableItem(ai.shortlist[k]);
+    html = '<div class="section">Premières pistes</div><div class="box pending">' + html + '</div>';
+  }
+  return html;
+}
+
 function render() {
   var raw = $("q").value.trim(), q = raw.toLowerCase();
   var html = "", items = "";
+
+  if (aiActive()) {
+    var list = $("list"), top = list.scrollTop;
+    list.innerHTML = renderAi();
+    list.scrollTop = top;
+    return;
+  }
+  if (ai.state !== "idle") { ai.state = "idle"; ai.run++; $("aiSearch").className = "ai-search"; }
+  setAiStatus(raw ? "Entrée pour demander à l’IA · la liste se filtre déjà pendant que tu tapes"
+    : "Décris ton besoin et appuie sur Entrée : l’IA trouve les skills qu’il te faut");
+  if (!raw) {
+    var tries = "";
+    for (var t = 0; t < TRIES.length; t++)
+      tries += '<span onclick="tryQuery(\'' + esc(TRIES[t]) + '\')">' + esc(TRIES[t]) + '</span>';
+    html += '<div class="section">Essaie</div><div class="tries">' + tries + '</div>';
+  }
 
   for (var i = 0; i < installed.length; i++) items += installedItem(installed[i], q);
   if (items) html += '<div class="section">Installés</div><div class="box">' + items + '</div>';

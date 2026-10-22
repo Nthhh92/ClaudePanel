@@ -3,6 +3,7 @@
 // installs things on the machine.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod ai;
 mod detect;
 mod launch;
 mod migrate;
@@ -33,6 +34,8 @@ fn main() {
             settings::uninstall_self,
             update::check_update,
             update::install_update,
+            ai::ai_understand,
+            ai::ai_pick,
         ])
         .run(tauri::generate_context!())
         .expect("ClaudePanel n'a pas pu démarrer");

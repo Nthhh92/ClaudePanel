@@ -5,22 +5,27 @@
 #   .\release.ps1 2.1.0              add the version's news to ui\changelog.js first
 #   .\release.ps1 2.1.0 -NoPublish   build and sign only (latest.json points at -BaseUrl)
 #   -Config test.json                merged into tauri.conf.json for this build only
+#   -Key <file> -NoPassword          sign with another key (2.2.3: the old one, which has
+#                                    no password, so 2.2.2 accepts the switch to the new key)
+#
+# Asks for the signing key's password (claudepanel-v2.key), unless -NoPassword.
 param(
   [Parameter(Mandatory)][string]$Version,
   [string]$BaseUrl = "",
   [string]$Config = "",
-  [switch]$NoPublish
+  [switch]$NoPublish,
+  [string]$Key = "$env:USERPROFILE\.tauri\claudepanel-v2.key",
+  [switch]$NoPassword
 )
 $ErrorActionPreference = "Stop"
 $app = $PSScriptRoot
 $repo = "Nthhh92/ClaudePanel-releases"
 $gh = "C:\Program Files\GitHub CLI\gh.exe"
-$key = "$env:USERPROFILE\.tauri\claudepanel.key"
 $utf8 = New-Object Text.UTF8Encoding $false
 if (-not $BaseUrl) { $BaseUrl = "https://github.com/$repo/releases/download/v$Version" }
 
 if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw "Version attendue sous la forme 2.1.0" }
-if (-not (Test-Path $key)) { throw "Clé de signature introuvable : $key" }
+if (-not (Test-Path $Key)) { throw "Clé de signature introuvable : $Key" }
 
 # This version's news, from ui\changelog.js: they become the release notes
 $changelog = [IO.File]::ReadAllText("$app\ui\changelog.js")
@@ -42,13 +47,22 @@ Set-FirstMatch "$app\package.json" '"version": "[^"]+"' "`"version`": `"$Version
 
 # Signed build
 $env:Path = [Environment]::GetEnvironmentVariable("Path", "User") + ";" + [Environment]::GetEnvironmentVariable("Path", "Machine")
-$env:TAURI_SIGNING_PRIVATE_KEY = [IO.File]::ReadAllText($key)
-$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = ""
+$env:TAURI_SIGNING_PRIVATE_KEY = [IO.File]::ReadAllText($Key)
+if ($NoPassword) { $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = "" }
+else {
+  $secure = Read-Host "Mot de passe de la clé de signature" -AsSecureString
+  $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR(
+    [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure))
+}
 Push-Location $app
 # The build logs to stderr: PowerShell 5 would stop on that with "Stop"
 $ErrorActionPreference = "Continue"
 $extra = if ($Config) { @("--config", $Config) } else { @() }
-try { npx tauri build --bundles nsis @extra 2>&1 | ForEach-Object { "$_" } } finally { Pop-Location }
+try { npx tauri build --bundles nsis @extra 2>&1 | ForEach-Object { "$_" } }
+finally {
+  Pop-Location
+  Remove-Item Env:TAURI_SIGNING_PRIVATE_KEY, Env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD -ErrorAction SilentlyContinue
+}
 $ErrorActionPreference = "Stop"
 if ($LASTEXITCODE) { throw "La compilation a échoué" }
 

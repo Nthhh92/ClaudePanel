@@ -4,6 +4,18 @@
 // uses its French items as the release notes.
 var CHANGELOG = [
   {
+    version: "2.2.3",
+    date: "2026-10-22",
+    items: {
+      fr: [["Mises à jour mieux protégées", "Les prochaines versions sont signées avec une nouvelle clé, protégée par un mot de passe."]],
+      en: [["Better protected updates", "Upcoming versions are signed with a new, password-protected key."]],
+      es: [["Actualizaciones mejor protegidas", "Las próximas versiones se firman con una nueva clave, protegida por contraseña."]],
+      de: [["Besser geschützte Updates", "Kommende Versionen werden mit einem neuen, passwortgeschützten Schlüssel signiert."]],
+      it: [["Aggiornamenti più protetti", "Le prossime versioni sono firmate con una nuova chiave, protetta da password."]],
+      pt: [["Atualizações mais protegidas", "As próximas versões são assinadas com uma nova chave, protegida por senha."]]
+    }
+  },
+  {
     version: "2.2.2",
     date: "2026-10-22",
     items: {

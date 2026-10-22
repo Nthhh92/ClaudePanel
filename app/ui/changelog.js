@@ -4,6 +4,18 @@
 // uses its French items as the release notes.
 var CHANGELOG = [
   {
+    version: "2.2.2",
+    date: "2026-10-22",
+    items: {
+      fr: [["Plus de sécurité", "Un plugin au nom piégé ne peut plus lancer de programme depuis la liste des skills, et le panel bloque tout script qui ne vient pas de lui."]],
+      en: [["Safer", "A plugin with a booby-trapped name can no longer launch a program from the skills list, and the panel blocks any script that isn’t its own."]],
+      es: [["Más seguro", "Un plugin con un nombre trampa ya no puede abrir un programa desde la lista de skills, y el panel bloquea cualquier script que no sea suyo."]],
+      de: [["Mehr Sicherheit", "Ein Plugin mit präpariertem Namen kann aus der Skill-Liste kein Programm mehr starten, und das Panel blockiert jedes fremde Skript."]],
+      it: [["Più sicuro", "Un plugin con un nome trappola non può più avviare un programma dalla lista delle skill, e il pannello blocca ogni script che non è suo."]],
+      pt: [["Mais seguro", "Um plugin com nome armadilha não consegue mais abrir um programa pela lista de skills, e o painel bloqueia qualquer script que não seja dele."]]
+    }
+  },
+  {
     version: "2.2.1",
     date: "2026-10-22",
     items: {

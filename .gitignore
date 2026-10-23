@@ -2,5 +2,4 @@ data/
 dist/
 node_modules/
 target/
-.impeccable/
 app/src-tauri/gen/

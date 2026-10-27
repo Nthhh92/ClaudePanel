@@ -2078,6 +2078,7 @@ o-k-7/6x6
 oaknational/oak-ai-plugins
 oaleviola/arroway-plugin
 oborseth/porkbun-mcp
+obra/superpowers
 obsvra/spicegrinder-cookbook
 obto-inc/platform
 ocrwell/skill

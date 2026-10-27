@@ -143,7 +143,9 @@ function starsBadge(p) {
 
 function inTab(p) {
   if (sortMode === "official") return p.marketplaceName === "claude-plugins-official";
-  if (sortMode === "anthropic") return repoOf(p).indexOf("anthropics/") === 0;
+  // Anthropic's own repositories; the official one also hosts partners' plugins in external_plugins/
+  if (sortMode === "anthropic")
+    return repoOf(p).indexOf("anthropics/") === 0 && String(p.source).indexOf("external_plugins") < 0;
   return true;
 }
 

@@ -4,6 +4,30 @@
 // uses its French items as the release notes.
 var CHANGELOG = [
   {
+    version: "2.3.0",
+    date: "2026-10-27",
+    items: {
+      fr: [["Les skills triés par stars", "Chaque skill affiche les stars GitHub de son dépôt, et la liste commence par les plus suivis."],
+           ["Trois filtres", "Plus de stars, Officiels ou Bibliothèque Anthropic : choisis ce que tu veux voir."],
+           ["Afficher plus", "La recherche IA montre d’abord quelques résultats ; un bouton en ajoute d’autres."]],
+      en: [["Skills sorted by stars", "Each skill shows its repository’s GitHub stars, and the list starts with the most followed."],
+           ["Three filters", "Most stars, Official or Anthropic library: pick what you want to see."],
+           ["Show more", "AI search first shows a few results; a button adds more."]],
+      es: [["Skills ordenados por estrellas", "Cada skill muestra las estrellas de GitHub de su repositorio, y la lista empieza por los más seguidos."],
+           ["Tres filtros", "Más estrellas, Oficiales o Biblioteca de Anthropic: elige lo que quieres ver."],
+           ["Mostrar más", "La búsqueda con IA muestra primero algunos resultados; un botón añade más."]],
+      de: [["Skills nach Sternen sortiert", "Jeder Skill zeigt die GitHub-Sterne seines Repositorys, und die Liste beginnt mit den beliebtesten."],
+           ["Drei Filter", "Meiste Sterne, Offiziell oder Anthropic-Bibliothek: Wähle, was du sehen willst."],
+           ["Mehr anzeigen", "Die KI-Suche zeigt zuerst einige Ergebnisse; ein Button fügt weitere hinzu."]],
+      it: [["Skill ordinati per stelle", "Ogni skill mostra le stelle GitHub del suo repository, e l’elenco parte dai più seguiti."],
+           ["Tre filtri", "Più stelle, Ufficiali o Libreria Anthropic: scegli cosa vuoi vedere."],
+           ["Mostra altri", "La ricerca IA mostra prima alcuni risultati; un pulsante ne aggiunge altri."]],
+      pt: [["Skills ordenados por estrelas", "Cada skill mostra as estrelas do GitHub do seu repositório, e a lista começa pelos mais seguidos."],
+           ["Três filtros", "Mais estrelas, Oficiais ou Biblioteca da Anthropic: escolha o que quer ver."],
+           ["Mostrar mais", "A busca com IA mostra primeiro alguns resultados; um botão adiciona outros."]]
+    }
+  },
+  {
     version: "2.2.7",
     date: "2026-10-22",
     items: {

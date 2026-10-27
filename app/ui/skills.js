@@ -1,8 +1,12 @@
 // Skills view: installed skills grouped by plugin, popular or searched plugins
 // to install, GitHub marketplaces to add. Unverified sources ask first.
 
-var installed = [], available = [], catalog = {}, installedIds = {};
+var installed = [], available = [], catalog = {}, installedIds = {}, marketRepos = {}, byId = {};
 var opened = {}, busy = false, pending = null, confirmId = null;
+// Plugins to install: which ones (all, official, Anthropic's), always most stars first
+var sortMode = "stars";
+// How many items a list shows; "Show more" adds a page. Reset when the search changes.
+var PAGE = { list: 8, ai: 4 }, shown = {}, shownKey = "";
 
 // A skill is "verified" when it ships from a marketplace Anthropic maintains.
 // Anything else — a GitHub repo added by hand — is unverified and warns first.
@@ -45,6 +49,7 @@ function setLists(l) {
   installed = l.installed || [];
   available = l.available || [];
   catalog = l.catalog || {};
+  marketRepos = l.marketplaces || {};
   installedIds = {};
   for (var i = 0; i < installed.length; i++) installedIds[installed[i].id] = true;
   // The CLI leaves installed plugins out of "available": put them back from the
@@ -55,9 +60,104 @@ function setLists(l) {
     var c = catalog[id], entry = c && c.marketplace_entry;
     if (listed[id] || !entry) continue;
     available.push({ pluginId: id, name: entry.name || c.plugin, description: entry.description || "",
-      marketplaceName: id.split("@")[1] || "", installCount: c.unique_installs || 0 });
+      marketplaceName: id.split("@")[1] || "", installCount: c.unique_installs || 0, source: entry.source });
   }
-  available.sort(function (a, b) { return (b.installCount || 0) - (a.installCount || 0); });
+  byId = {};
+  for (var b = 0; b < available.length; b++) byId[available[b].pluginId] = available[b];
+  sortByStars();
+}
+
+/* ---------- GitHub stars ---------- */
+
+// Counted once a day for every plugin repository by .github/workflows/stars.yml
+var STARS_URL = "https://raw.githubusercontent.com/Nthhh92/ClaudePanel-releases/stars/stars.json";
+var DAY = 864e5, stars = {}, starsAsked = {};
+
+// owner/repo in lower case, the way stars.json names them
+function repoOf(p) {
+  var s = p && p.source;
+  if (!s) return "";
+  if (typeof s === "string") return String(marketRepos[p.marketplaceName] || "").toLowerCase();
+  if (s.source === "github") return String(s.repo || "").toLowerCase();
+  var m = String(s.url || "").match(/github\.com[\/:]([\w.-]+\/[\w.-]+?)(?:\.git)?\/?$/i);
+  return m ? m[1].toLowerCase() : "";
+}
+function starsOf(p) { var r = repoOf(p); return r && stars[r] != null ? stars[r] : -1; }
+
+function sortByStars() {
+  available.sort(function (a, b) { return starsOf(b) - starsOf(a) || (b.installCount || 0) - (a.installCount || 0); });
+  // Installed plugins too; personal and claude.ai skills stay last
+  installed.sort(function (a, b) {
+    return (b.id ? 1 : 0) - (a.id ? 1 : 0) || starsOf(byId[b.id]) - starsOf(byId[a.id]);
+  });
+}
+
+function readStore(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } }
+function writeStore(key, v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) {} }
+function addStars(map) { for (var r in map) if (map[r] != null) stars[r] = map[r]; }
+
+// The daily file, kept half a day
+function loadStars() {
+  var saved = readStore("stars");
+  if (saved) addStars(saved.stars);
+  if (saved && Date.now() - saved.at < DAY / 2) return Promise.resolve();
+  return fetch(STARS_URL)
+    .then(function (r) { if (!r.ok) throw r.status; return r.json(); })
+    .then(function (j) { writeStore("stars", { at: Date.now(), stars: j.stars }); addStars(j.stars); }, function () {});
+}
+
+// Repositories the daily file doesn't know (a marketplace added by hand) are
+// asked of GitHub directly, a few at a time: 60 requests an hour without an account
+function askMissingStars() {
+  var extra = readStore("starsExtra") || {}, todo = [], now = Date.now();
+  for (var r in extra) if (now - extra[r].at < DAY && extra[r].n != null) stars[r] = extra[r].n;
+  for (var i = 0; i < available.length && todo.length < 10; i++) {
+    var repo = repoOf(available[i]);
+    if (!repo || isVerified(available[i].marketplaceName) || stars[repo] != null || starsAsked[repo]) continue;
+    if (extra[repo] && now - extra[repo].at < DAY) continue;
+    starsAsked[repo] = true;
+    todo.push(repo);
+  }
+  if (!todo.length) { sortByStars(); render(); return; }
+  Promise.all(todo.map(function (repo) {
+    return fetch("https://api.github.com/repos/" + repo)
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (j) { extra[repo] = { n: j ? j.stargazers_count : null, at: now }; }, function () {});
+  })).then(function () {
+    writeStore("starsExtra", extra);
+    for (var k in extra) if (extra[k].n != null) stars[k] = extra[k].n;
+    sortByStars();
+    render();
+  });
+}
+
+function fmtCompact(n) { return Number(n).toLocaleString(LANG, { notation: "compact", maximumFractionDigits: 1 }); }
+
+function starsBadge(p) {
+  var n = starsOf(p);
+  if (n < 0) return "";
+  return '<span class="stars" title="' + esc(t("skills.stars", { n: fmtNumber(n) })) + '">' +
+    '<svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"></path></svg>' +
+    esc(fmtCompact(n)) + '</span>';
+}
+
+function inTab(p) {
+  if (sortMode === "official") return p.marketplaceName === "claude-plugins-official";
+  if (sortMode === "anthropic") return repoOf(p).indexOf("anthropics/") === 0;
+  return true;
+}
+
+function tabs() {
+  var modes = ["stars", "official", "anthropic"], html = "";
+  for (var i = 0; i < modes.length; i++)
+    html += '<span role="tab" aria-selected="' + (modes[i] === sortMode) + '"' + (modes[i] === sortMode ? ' class="on"' : '') +
+      ' data-act="sort" data-arg="' + modes[i] + '">' + esc(t("sort." + modes[i])) + '</span>';
+  return '<div class="seg" role="tablist">' + html + '</div>';
+}
+
+function limit(list) { return shown[list] || PAGE[list]; }
+function moreButton(list) {
+  return '<div class="more" data-act="more" data-arg="' + list + '">' + esc(t("skills.more")) + '</div>';
 }
 
 // Skill and command names an available plugin ships, from the catalog cache
@@ -94,7 +194,8 @@ function openSkills() {
   showView("skills");
   syncAi();
   setState(t("skills.updating"));
-  reload().then(function () { setState(""); }, function () { setState(""); });
+  var starsReady = loadStars().then(function () { sortByStars(); render(); });
+  reload().then(function () { setState(""); starsReady.then(askMissingStars); }, function () { setState(""); });
 }
 
 var searchTimer;
@@ -140,7 +241,7 @@ function installedItem(g, q) {
   }
   return '<div class="item' + (isOpen ? " open" : "") + '">' +
     '<div class="head" data-act="toggle" data-arg="' + esc(key) + '"><div class="chev">&#8250;</div>' +
-    '<div class="txt"><div class="name">' + esc(g.plugin) + '</div></div>' +
+    '<div class="txt"><div class="name">' + esc(g.plugin) + starsBadge(byId[g.id]) + '</div></div>' +
     '<div class="count">' + skills.length + '</div></div>' +
     '<div class="body">' + body + '</div></div>';
 }
@@ -159,7 +260,7 @@ function availableItem(p, why) {
     '<div>' + esc(t("skills.unverified")) + '</div></div>';
   return '<div class="item' + (opened[key] ? " open" : "") + '">' +
     '<div class="head" data-act="toggle" data-arg="' + esc(key) + '"><div class="chev">&#8250;</div>' +
-    '<div class="txt"><div class="name">' + esc(p.name) + (verified ? '' : warnSvg(15)) + '</div>' +
+    '<div class="txt"><div class="name">' + esc(p.name) + (verified ? '' : warnSvg(15)) + starsBadge(p) + '</div>' +
     (why ? '<div class="why">' + esc(why) + '</div>' : '<div class="desc">' + esc(p.description) + '</div>') + '</div>' +
     btn + '</div>' +
     '<div class="body">' + note + '<div class="about">' + esc(p.description) + '</div>' +
@@ -255,6 +356,7 @@ function aiSearch() {
   if (ai.state === "busy" && ai.query === q) return;
   var run = ++ai.run;
   ai = { query: q, state: "busy", shortlist: null, picks: null, run: run };
+  shown.ai = 0;
   var bar = $("aiSearch");
   bar.classList.add("thinking");
   setAiStatus(t("ai.understanding"), "busy");
@@ -296,14 +398,19 @@ function aiSearch() {
 }
 
 function renderAi() {
-  var html = "", byId = {};
-  for (var i = 0; i < available.length; i++) byId[available[i].pluginId] = available[i];
+  var html = "";
   if (ai.picks) {
+    // The AI's picks first, a few at a time, then the other leads it was shown
+    var rows = [], seen = {};
     for (var j = 0; j < ai.picks.length; j++) {
       var p = byId[ai.picks[j].id];
-      if (p) html += availableItem(p, ai.picks[j].why);
+      if (p && !seen[p.pluginId]) { seen[p.pluginId] = true; rows.push(availableItem(p, ai.picks[j].why)); }
     }
-    if (html) html = '<div class="section">' + esc(t("sec.ai")) + '</div><div class="box">' + html + '</div>';
+    if (rows.length && ai.shortlist)
+      for (var i = 0; i < ai.shortlist.length; i++)
+        if (!seen[ai.shortlist[i].pluginId]) rows.push(availableItem(ai.shortlist[i]));
+    if (rows.length) html = '<div class="section">' + esc(t("sec.ai")) + '</div><div class="box">' +
+      rows.slice(0, limit("ai")).join("") + '</div>' + (rows.length > limit("ai") ? moreButton("ai") : "");
   } else if (ai.shortlist) {
     // First leads while the AI chooses
     for (var k = 0; k < Math.min(5, ai.shortlist.length); k++) html += availableItem(ai.shortlist[k]);
@@ -315,6 +422,7 @@ function renderAi() {
 function render() {
   var raw = $("q").value.trim(), q = raw.toLowerCase();
   var html = "", items = "";
+  if (shownKey !== q + "|" + sortMode) { shownKey = q + "|" + sortMode; shown.list = 0; }
 
   if (aiActive()) {
     var list = $("list"), top = list.scrollTop;
@@ -335,13 +443,14 @@ function render() {
   for (var i = 0; i < installed.length; i++) items += installedItem(installed[i], q);
   if (items) html += '<div class="section">' + esc(t("sec.installed")) + '</div><div class="box">' + items + '</div>';
 
-  // Plugins to install: search results, or the most popular ones
+  // Plugins to install: search results, or the most starred ones
   items = "";
-  var n = 0, max = q ? 30 : 8, seen = {};
-  for (var k = 0; k < available.length && n < max; k++) {
+  var n = 0, max = limit("list"), more = false, seen = {};
+  for (var k = 0; k < available.length; k++) {
     var p = available[k];
-    if (installedIds[p.pluginId] || seen[p.name]) continue;
+    if (installedIds[p.pluginId] || seen[p.name] || !inTab(p)) continue;
     if (q && !has(q, p.name) && !has(q, p.description) && !has(q, p.marketplaceName) && !has(q, skillsOf(p).join(" "))) continue;
+    if (n === max) { more = true; break; }
     seen[p.name] = true;
     n++;
     items += availableItem(p);
@@ -352,7 +461,10 @@ function render() {
       warnSvg(15) + '</div><div class="desc">' + esc(t("skills.repo")) + '</div></div>' +
       '<div class="pill caution" data-act="addRepo" data-arg="' + esc(repo) + '">' + esc(t("skills.add")) + '</div></div></div>' + items;
   }
-  if (items) html += '<div class="section">' + esc(t(q ? "sec.toInstall" : "sec.popular")) + '</div><div class="box">' + items + '</div>';
+  if (available.length) {
+    html += '<div class="section-row"><div class="section">' + esc(t(q ? "sec.toInstall" : "sec.popular")) + '</div>' + tabs() + '</div>' +
+      (items ? '<div class="box">' + items + '</div>' + (more ? moreButton("list") : "") : '<div class="empty">' + esc(t("skills.none")) + '</div>');
+  } else if (items) html += '<div class="section">' + esc(t("sec.toInstall")) + '</div><div class="box">' + items + '</div>';
 
   if (!html) html = '<div class="empty">' + esc(t(env && !env.code ? "skills.needCode" : "skills.none")) + '</div>';
   var list = $("list"), top = list.scrollTop;
@@ -420,6 +532,8 @@ $("list").addEventListener("click", function (e) {
         if (available[i].pluginId === arg) { askInstall(arg, available[i].name); break; }
       break;
     case "try": tryQuery(arg); break;
+    case "sort": sortMode = arg; render(); break;
+    case "more": shown[arg] = limit(arg) + PAGE[arg]; render(); break;
     case "addRepo": askAddRepo(arg); break;
   }
 });

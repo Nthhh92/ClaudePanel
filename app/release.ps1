@@ -45,6 +45,12 @@ Set-FirstMatch "$app\src-tauri\tauri.conf.json" '"version": "[^"]+"' "`"version`
 Set-FirstMatch "$app\src-tauri\Cargo.toml" '^version = "[^"]+"' "version = `"$Version`""
 Set-FirstMatch "$app\package.json" '"version": "[^"]+"' "`"version`": `"$Version`""
 
+# Plugin repositories whose stars .github/workflows/stars.yml counts each day,
+# from Claude Code's current catalog (commit the file with the version)
+$stars = Join-Path (Split-Path $app) ".github\stars"
+cmd /c "claude plugin list --json --available | python `"$stars\repos.py`" `"$stars\repos.txt`""
+if ($LASTEXITCODE) { Write-Host "Liste des dépôts (stars) non mise à jour" -ForegroundColor Yellow }
+
 # Signed build
 $env:Path = [Environment]::GetEnvironmentVariable("Path", "User") + ";" + [Environment]::GetEnvironmentVariable("Path", "Machine")
 $env:TAURI_SIGNING_PRIVATE_KEY = [IO.File]::ReadAllText($Key)

@@ -20,7 +20,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src ipc: http://ipc.localhost https://wttr.in; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src ipc: http://ipc.localhost https://wttr.in https://raw.githubusercontent.com https://api.github.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'",
       "dangerousDisableAssetCspModification": ["style-src"]
     }
   },

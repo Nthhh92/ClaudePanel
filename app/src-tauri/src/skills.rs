@@ -27,6 +27,9 @@ pub struct Lists {
     available: Vec<Value>,
     /// Plugin details by id (skill names), from Claude Code's catalog cache
     catalog: Value,
+    /// GitHub repository (owner/repo) of each marketplace, by name: plugins
+    /// whose source is a folder of their marketplace live there
+    marketplaces: Value,
 }
 
 #[tauri::command]
@@ -41,7 +44,15 @@ pub async fn skills_list() -> Result<Lists, String> {
         let catalog = read_json(&plugins.join("plugin-catalog-cache.json"))
             .map(|j| j["catalog"]["plugins"].clone())
             .unwrap_or(Value::Null);
-        Lists { installed: installed_groups(), available, catalog }
+        let mut marketplaces = serde_json::Map::new();
+        if let Some(known) = read_json(&plugins.join("known_marketplaces.json")).and_then(|j| j.as_object().cloned()) {
+            for (name, m) in known {
+                if let Some(repo) = m["source"]["repo"].as_str() {
+                    marketplaces.insert(name, repo.into());
+                }
+            }
+        }
+        Lists { installed: installed_groups(), available, catalog, marketplaces: marketplaces.into() }
     })
     .await
     .map_err(|e| e.to_string())

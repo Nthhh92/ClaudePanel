@@ -73,6 +73,8 @@ var STR = {
     "toast.repoAdded": "Dépôt ajouté ✓", "toast.repoNotFound": "Dépôt introuvable", "toast.copied": "Copié : {c}",
     "sec.ai": "Suggestions de l’IA", "sec.leads": "Premières pistes", "sec.try": "Essaie", "sec.installed": "Installés",
     "sec.toInstall": "À installer", "sec.popular": "Populaires",
+    "sort.stars": "Plus de stars", "sort.official": "Officiels", "sort.anthropic": "Bibliothèque Anthropic",
+    "skills.more": "Afficher plus", "skills.stars": "{n} stars sur GitHub",
 
     "search.aria": "Recherche de skills", "search.phOff": "Rechercher un skill…", "search.phOn": "Décris ce que tu veux faire…",
     "ai.switch": "Recherche IA", "ai.disabled": "Recherche IA désactivée", "ai.enabled": "Recherche IA activée ✓",
@@ -162,6 +164,8 @@ var STR = {
     "toast.repoAdded": "Repository added ✓", "toast.repoNotFound": "Repository not found", "toast.copied": "Copied: {c}",
     "sec.ai": "AI suggestions", "sec.leads": "First leads", "sec.try": "Try", "sec.installed": "Installed",
     "sec.toInstall": "To install", "sec.popular": "Popular",
+    "sort.stars": "Most stars", "sort.official": "Official", "sort.anthropic": "Anthropic library",
+    "skills.more": "Show more", "skills.stars": "{n} stars on GitHub",
 
     "search.aria": "Skill search", "search.phOff": "Search for a skill…", "search.phOn": "Describe what you want to do…",
     "ai.switch": "AI search", "ai.disabled": "AI search off", "ai.enabled": "AI search on ✓",
@@ -251,6 +255,8 @@ var STR = {
     "toast.repoAdded": "Repositorio añadido ✓", "toast.repoNotFound": "Repositorio no encontrado", "toast.copied": "Copiado: {c}",
     "sec.ai": "Sugerencias de la IA", "sec.leads": "Primeras pistas", "sec.try": "Prueba", "sec.installed": "Instalados",
     "sec.toInstall": "Para instalar", "sec.popular": "Populares",
+    "sort.stars": "Más estrellas", "sort.official": "Oficiales", "sort.anthropic": "Biblioteca de Anthropic",
+    "skills.more": "Mostrar más", "skills.stars": "{n} estrellas en GitHub",
 
     "search.aria": "Búsqueda de skills", "search.phOff": "Buscar un skill…", "search.phOn": "Describe lo que quieres hacer…",
     "ai.switch": "Búsqueda IA", "ai.disabled": "Búsqueda IA desactivada", "ai.enabled": "Búsqueda IA activada ✓",
@@ -340,6 +346,8 @@ var STR = {
     "toast.repoAdded": "Repository hinzugefügt ✓", "toast.repoNotFound": "Repository nicht gefunden", "toast.copied": "Kopiert: {c}",
     "sec.ai": "Vorschläge der KI", "sec.leads": "Erste Treffer", "sec.try": "Probier mal", "sec.installed": "Installiert",
     "sec.toInstall": "Zum Installieren", "sec.popular": "Beliebt",
+    "sort.stars": "Meiste Sterne", "sort.official": "Offiziell", "sort.anthropic": "Anthropic-Bibliothek",
+    "skills.more": "Mehr anzeigen", "skills.stars": "{n} Sterne auf GitHub",
 
     "search.aria": "Skill-Suche", "search.phOff": "Einen Skill suchen…", "search.phOn": "Beschreib, was du tun möchtest…",
     "ai.switch": "KI-Suche", "ai.disabled": "KI-Suche aus", "ai.enabled": "KI-Suche an ✓",
@@ -429,6 +437,8 @@ var STR = {
     "toast.repoAdded": "Repository aggiunto ✓", "toast.repoNotFound": "Repository non trovato", "toast.copied": "Copiato: {c}",
     "sec.ai": "Suggerimenti dell’IA", "sec.leads": "Prime piste", "sec.try": "Prova", "sec.installed": "Installati",
     "sec.toInstall": "Da installare", "sec.popular": "Popolari",
+    "sort.stars": "Più stelle", "sort.official": "Ufficiali", "sort.anthropic": "Libreria Anthropic",
+    "skills.more": "Mostra altri", "skills.stars": "{n} stelle su GitHub",
 
     "search.aria": "Ricerca di skill", "search.phOff": "Cerca uno skill…", "search.phOn": "Descrivi cosa vuoi fare…",
     "ai.switch": "Ricerca IA", "ai.disabled": "Ricerca IA disattivata", "ai.enabled": "Ricerca IA attivata ✓",
@@ -518,6 +528,8 @@ var STR = {
     "toast.repoAdded": "Repositório adicionado ✓", "toast.repoNotFound": "Repositório não encontrado", "toast.copied": "Copiado: {c}",
     "sec.ai": "Sugestões da IA", "sec.leads": "Primeiras pistas", "sec.try": "Experimente", "sec.installed": "Instalados",
     "sec.toInstall": "Para instalar", "sec.popular": "Populares",
+    "sort.stars": "Mais estrelas", "sort.official": "Oficiais", "sort.anthropic": "Biblioteca da Anthropic",
+    "skills.more": "Mostrar mais", "skills.stars": "{n} estrelas no GitHub",
 
     "search.aria": "Busca de skills", "search.phOff": "Buscar um skill…", "search.phOn": "Descreva o que você quer fazer…",
     "ai.switch": "Busca com IA", "ai.disabled": "Busca com IA desativada", "ai.enabled": "Busca com IA ativada ✓",

@@ -1,0 +1,39 @@
+# Counts the GitHub stars of every plugin repository once a day and puts the
+# result, stars.json, on the "stars" branch of the public releases repository,
+# where the app reads it. One commit, replaced each time.
+#
+# The list of repositories is .github/stars/repos.txt; app/release.ps1 refreshes
+# it from Claude Code's catalog. Secret: RELEASES_TOKEN (writes to the releases repository).
+name: Stars
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+env:
+  REPO: Nthhh92/ClaudePanel-releases
+
+jobs:
+  stars:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Count the stars
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          python3 .github/stars/stars.py .github/stars/repos.txt > "$RUNNER_TEMP/out/stars.json"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Publish
+        working-directory: ${{ runner.temp }}/out
+        run: |
+          git init -q -b stars
+          git add stars.json
+          git -c user.name=ClaudePanel -c user.email=claudepanel@users.noreply.github.com \
+            commit -q -m "Stars"
+          git push -q --force "https://x-access-token:${TOKEN}@github.com/$REPO.git" stars
+        env:
+          TOKEN: ${{ secrets.RELEASES_TOKEN }}
